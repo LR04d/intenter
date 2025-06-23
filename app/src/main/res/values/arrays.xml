@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="extra_types">
+        <item>String</item>
+        <item>Integer</item>
+        <item>Boolean</item>
+        <item>Float</item>
+    </string-array>
+</resources>
