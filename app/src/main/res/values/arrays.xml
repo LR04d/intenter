@@ -5,5 +5,141 @@
         <item>Integer</item>
         <item>Boolean</item>
         <item>Float</item>
+        <item>Long</item>
+        <item>Double</item>
+        <item>Uri</item>
+        <item>String[]</item>
+        <item>int[]</item>
+        <item>long[]</item>
+        <item>double[]</item>
+        <item>boolean[]</item>
+        <item>ArrayList&lt;String&gt;</item>
+        <item>ArrayList&lt;Integer&gt;</item>
+    </string-array>
+
+    <string-array name="intent_actions">
+        <item>android.intent.action.VIEW</item>
+        <item>android.intent.action.SEND</item>
+        <item>android.intent.action.SENDTO</item>
+        <item>android.intent.action.SEND_MULTIPLE</item>
+        <item>android.intent.action.MAIN</item>
+        <item>android.intent.action.CALL</item>
+        <item>android.intent.action.DIAL</item>
+        <item>android.intent.action.PICK</item>
+        <item>android.intent.action.EDIT</item>
+        <item>android.intent.action.DELETE</item>
+        <item>android.intent.action.INSERT</item>
+        <item>android.intent.action.SEARCH</item>
+        <item>android.intent.action.WEB_SEARCH</item>
+        <item>android.intent.action.MEDIA_PLAY_FROM_SEARCH</item>
+        <item>android.intent.action.OPEN_DOCUMENT</item>
+        <item>android.intent.action.OPEN_DOCUMENT_TREE</item>
+        <item>android.intent.action.CREATE_DOCUMENT</item>
+        <item>android.intent.action.GET_CONTENT</item>
+        <item>android.intent.action.CHOOSER</item>
+        <item>android.intent.action.SHARE</item>
+        <item>android.intent.action.BOOT_COMPLETED</item>
+        <item>android.intent.action.PACKAGE_ADDED</item>
+        <item>android.intent.action.PACKAGE_REMOVED</item>
+        <item>android.intent.action.PACKAGE_REPLACED</item>
+        <item>android.intent.action.BATTERY_LOW</item>
+        <item>android.intent.action.BATTERY_OKAY</item>
+        <item>android.intent.action.POWER_CONNECTED</item>
+        <item>android.intent.action.POWER_DISCONNECTED</item>
+        <item>android.intent.action.SCREEN_ON</item>
+        <item>android.intent.action.SCREEN_OFF</item>
+        <item>android.intent.action.USER_PRESENT</item>
+        <item>android.intent.action.SET_WALLPAPER</item>
+        <item>android.intent.action.MANAGE_NETWORK_USAGE</item>
+        <item>android.intent.action.INSTALL_PACKAGE</item>
+        <item>android.intent.action.UNINSTALL_PACKAGE</item>
+        <item>android.settings.SETTINGS</item>
+        <item>android.settings.WIFI_SETTINGS</item>
+        <item>android.settings.BLUETOOTH_SETTINGS</item>
+        <item>android.settings.APPLICATION_DETAILS_SETTINGS</item>
+        <item>android.settings.LOCATION_SOURCE_SETTINGS</item>
+        <item>android.settings.NFC_SETTINGS</item>
+        <item>android.settings.ACCESSIBILITY_SETTINGS</item>
+        <item>android.settings.DISPLAY_SETTINGS</item>
+        <item>android.settings.SOUND_SETTINGS</item>
+        <item>android.media.action.IMAGE_CAPTURE</item>
+        <item>android.media.action.VIDEO_CAPTURE</item>
+        <item>android.provider.Telephony.SMS_RECEIVED</item>
+    </string-array>
+
+    <string-array name="intent_categories">
+        <item>android.intent.category.DEFAULT</item>
+        <item>android.intent.category.BROWSABLE</item>
+        <item>android.intent.category.LAUNCHER</item>
+        <item>android.intent.category.HOME</item>
+        <item>android.intent.category.INFO</item>
+        <item>android.intent.category.ALTERNATIVE</item>
+        <item>android.intent.category.SELECTED_ALTERNATIVE</item>
+        <item>android.intent.category.TAB</item>
+        <item>android.intent.category.OPENABLE</item>
+        <item>android.intent.category.APP_BROWSER</item>
+        <item>android.intent.category.APP_CALCULATOR</item>
+        <item>android.intent.category.APP_CALENDAR</item>
+        <item>android.intent.category.APP_CONTACTS</item>
+        <item>android.intent.category.APP_EMAIL</item>
+        <item>android.intent.category.APP_GALLERY</item>
+        <item>android.intent.category.APP_MAPS</item>
+        <item>android.intent.category.APP_MARKET</item>
+        <item>android.intent.category.APP_MESSAGING</item>
+        <item>android.intent.category.APP_MUSIC</item>
+    </string-array>
+
+    <string-array name="mime_types">
+        <item>text/plain</item>
+        <item>text/html</item>
+        <item>text/xml</item>
+        <item>text/csv</item>
+        <item>application/json</item>
+        <item>application/xml</item>
+        <item>application/pdf</item>
+        <item>application/zip</item>
+        <item>application/octet-stream</item>
+        <item>application/vnd.android.package-archive</item>
+        <item>image/*</item>
+        <item>image/png</item>
+        <item>image/jpeg</item>
+        <item>image/gif</item>
+        <item>image/webp</item>
+        <item>video/*</item>
+        <item>video/mp4</item>
+        <item>video/3gpp</item>
+        <item>audio/*</item>
+        <item>audio/mpeg</item>
+        <item>audio/ogg</item>
+        <item>message/rfc822</item>
+        <item>*/*</item>
+    </string-array>
+
+    <string-array name="intent_flags">
+        <item>FLAG_ACTIVITY_NEW_TASK</item>
+        <item>FLAG_ACTIVITY_CLEAR_TOP</item>
+        <item>FLAG_ACTIVITY_SINGLE_TOP</item>
+        <item>FLAG_ACTIVITY_NO_HISTORY</item>
+        <item>FLAG_ACTIVITY_REORDER_TO_FRONT</item>
+        <item>FLAG_ACTIVITY_CLEAR_TASK</item>
+        <item>FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS</item>
+        <item>FLAG_ACTIVITY_FORWARD_RESULT</item>
+        <item>FLAG_ACTIVITY_BROUGHT_TO_FRONT</item>
+        <item>FLAG_ACTIVITY_MULTIPLE_TASK</item>
+        <item>FLAG_ACTIVITY_NEW_DOCUMENT</item>
+        <item>FLAG_ACTIVITY_NO_ANIMATION</item>
+        <item>FLAG_ACTIVITY_NO_USER_ACTION</item>
+        <item>FLAG_ACTIVITY_PREVIOUS_IS_TOP</item>
+        <item>FLAG_ACTIVITY_TASK_ON_HOME</item>
+        <item>FLAG_ACTIVITY_RETAIN_IN_RECENTS</item>
+        <item>FLAG_ACTIVITY_LAUNCH_ADJACENT</item>
+        <item>FLAG_GRANT_READ_URI_PERMISSION</item>
+        <item>FLAG_GRANT_WRITE_URI_PERMISSION</item>
+        <item>FLAG_GRANT_PERSISTABLE_URI_PERMISSION</item>
+        <item>FLAG_GRANT_PREFIX_URI_PERMISSION</item>
+        <item>FLAG_RECEIVER_FOREGROUND</item>
+        <item>FLAG_RECEIVER_NO_ABORT</item>
+        <item>FLAG_INCLUDE_STOPPED_PACKAGES</item>
+        <item>FLAG_EXCLUDE_STOPPED_PACKAGES</item>
     </string-array>
 </resources>

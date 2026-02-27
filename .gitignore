@@ -1,15 +1,61 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ─── Gradle ───────────────────────────────────────────────────────────────────
+.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# ─── Build outputs ────────────────────────────────────────────────────────────
+build/
+*/build/
+out/
+
+# ─── Local / machine-specific ─────────────────────────────────────────────────
 local.properties
+*.iml
+
+# ─── IntelliJ / Android Studio IDE ───────────────────────────────────────────
+.idea/
+*.iws
+*.ipr
+# Keep these checked in if you use them for shared run configs / code style:
+# !.idea/runConfigurations/
+# !.idea/codeStyles/
+
+# ─── Android-specific ─────────────────────────────────────────────────────────
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.ap_
+*.aab
+*.dex
+
+# ─── Kotlin (if added later) ──────────────────────────────────────────────────
+*.class
+*.jar
+
+# ─── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ─── Windows ──────────────────────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ─── Linux ────────────────────────────────────────────────────────────────────
+*~
+
+# ─── ProGuard ────────────────────────────────────────────────────────────────
+proguard/
+
+# ─── Test / Coverage ─────────────────────────────────────────────────────────
+*.exec
+.mtj.tmp/
+
+# ─── Generated sources (safe to ignore; regenerated every build) ─────────────
+app/src/main/java/com/open/intenter/BuildConfig.java
+app/src/main/java/com/open/intenter/R.java

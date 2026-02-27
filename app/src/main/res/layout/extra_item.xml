@@ -3,28 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="4dp"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="1dp">
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/colorOutlineVariant">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="12dp">
 
+        <!-- Key + Value row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="6dp"
                 android:hint="Key">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -37,11 +40,11 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="6dp"
                 android:hint="Value">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -54,27 +57,37 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <!-- Type + Remove row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_marginTop="8dp">
 
-            <Spinner
-                android:id="@+id/extraTypeSpinner"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:entries="@array/extra_types" />
+                android:hint="Type">
 
-            <ImageButton
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/extraTypeSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/removeExtraButton"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Remove extra"
-                android:src="@android:drawable/ic_menu_delete" />
+                android:text="Remove"
+                app:icon="@android:drawable/ic_menu_delete"
+                app:iconTint="@color/colorError" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
