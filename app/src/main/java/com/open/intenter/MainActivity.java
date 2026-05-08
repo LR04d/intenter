@@ -21,6 +21,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.chip.Chip;
@@ -91,6 +95,10 @@ public class MainActivity extends AppCompatActivity {
 
     // ── Preview ────────────────────────────────────────────────────────────
     private TextView intentPreviewText;
+    private NestedScrollView nestedScrollView;
+    private View bottomActionBar;
+    private int bottomActionBarBasePaddingBottom;
+    private int nestedScrollBasePaddingBottom;
 
     // ── History ────────────────────────────────────────────────────────────
     private HistoryManager historyManager;
@@ -178,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         setupActionAutocomplete();
         setupMimeTypeAutocomplete();
         setupPreviewWatchers();
+        setupKeyboardAwareLayout();
 
         // Default: Component on
         useComponent.setChecked(true);
@@ -190,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.launchButton).setOnClickListener(v -> launchIntent());
         findViewById(R.id.copyIntentButton).setOnClickListener(v -> copyIntentUri());
         findViewById(R.id.browsePackageButton).setOnClickListener(v -> showPackagePicker());
+        updatePreview();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -236,6 +246,8 @@ public class MainActivity extends AppCompatActivity {
 
         launchTypeChipGroup = findViewById(R.id.launchTypeChipGroup);
         intentPreviewText   = findViewById(R.id.intentPreviewText);
+        nestedScrollView    = findViewById(R.id.nestedScrollView);
+        bottomActionBar     = findViewById(R.id.bottomActionBar);
     }
 
     private void setupToolbar() {
@@ -312,6 +324,88 @@ public class MainActivity extends AppCompatActivity {
         useBundle.setOnCheckedChangeListener((b, on) -> { bundlesLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useFlags.setOnCheckedChangeListener((b, on) -> { flagsLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useChooser.setOnCheckedChangeListener((b, on) -> { chooserLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
+    }
+
+    private void setupKeyboardAwareLayout() {
+        View root = findViewById(R.id.rootLayout);
+        bottomActionBarBasePaddingBottom = bottomActionBar.getPaddingBottom();
+        nestedScrollBasePaddingBottom = nestedScrollView.getPaddingBottom();
+
+        bottomActionBar.post(() -> {
+            nestedScrollBasePaddingBottom = Math.max(
+                    nestedScrollBasePaddingBottom,
+                    bottomActionBar.getHeight() + dp(16));
+            nestedScrollView.setPadding(
+                    nestedScrollView.getPaddingLeft(),
+                    nestedScrollView.getPaddingTop(),
+                    nestedScrollView.getPaddingRight(),
+                    nestedScrollBasePaddingBottom);
+            ViewCompat.requestApplyInsets(root);
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (view, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            boolean imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+
+            bottomActionBar.setVisibility(imeVisible ? View.GONE : View.VISIBLE);
+            bottomActionBar.setPadding(
+                    bottomActionBar.getPaddingLeft(),
+                    bottomActionBar.getPaddingTop(),
+                    bottomActionBar.getPaddingRight(),
+                    bottomActionBarBasePaddingBottom + systemBars.bottom);
+
+            int bottomPadding = imeVisible
+                    ? ime.bottom + dp(24)
+                    : bottomActionBar.getHeight() + systemBars.bottom + dp(16);
+            nestedScrollView.setPadding(
+                    nestedScrollView.getPaddingLeft(),
+                    nestedScrollView.getPaddingTop(),
+                    nestedScrollView.getPaddingRight(),
+                    Math.max(bottomPadding, nestedScrollBasePaddingBottom));
+
+            if (imeVisible) {
+                scrollFocusedInputIntoView(root.findFocus());
+            }
+            return insets;
+        });
+
+        root.getViewTreeObserver().addOnGlobalFocusChangeListener((oldFocus, newFocus) -> {
+            if (isTextEntryView(newFocus)) {
+                scrollFocusedInputIntoView(newFocus);
+            }
+        });
+    }
+
+    private boolean isTextEntryView(View view) {
+        return view instanceof TextInputEditText || view instanceof MaterialAutoCompleteTextView;
+    }
+
+    private void scrollFocusedInputIntoView(View focused) {
+        if (focused == null || nestedScrollView == null) return;
+        nestedScrollView.postDelayed(() -> {
+            if (!focused.isShown()) return;
+
+            int[] scrollLocation = new int[2];
+            int[] focusedLocation = new int[2];
+            nestedScrollView.getLocationOnScreen(scrollLocation);
+            focused.getLocationOnScreen(focusedLocation);
+
+            int viewportTop = nestedScrollView.getPaddingTop();
+            int viewportBottom = nestedScrollView.getHeight() - nestedScrollView.getPaddingBottom();
+            int focusedTop = focusedLocation[1] - scrollLocation[1] - dp(12);
+            int focusedBottom = focusedTop + focused.getHeight() + dp(24);
+
+            if (focusedBottom > viewportBottom) {
+                nestedScrollView.smoothScrollBy(0, focusedBottom - viewportBottom);
+            } else if (focusedTop < viewportTop) {
+                nestedScrollView.smoothScrollBy(0, focusedTop - viewportTop);
+            }
+        }, 120);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -394,19 +488,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void showAbout() {
         new AlertDialog.Builder(this)
-                .setTitle("Intent Launcher")
+                .setTitle("Intenter")
                 .setMessage("A developer tool to build and fire Android Intents.\n\n" +
                         "Supports:\n" +
-                        "• Explicit & implicit intents\n" +
-                        "• Start Activity / Service / FG Service / Broadcast\n" +
-                        "• Activity for Result\n" +
-                        "• Chooser dialog wrapping\n" +
-                        "• Extras (String, Int, Boolean, Float, Long, Double, Uri, String[], int[], ArrayList)\n" +
-                        "• Bundle extras\n" +
-                        "• Intent flags (preset + custom hex)\n" +
-                        "• URI preview & clipboard copy\n" +
-                        "• Launch history with replay\n" +
-                        "• Installed package/activity browser")
+                        "- Explicit and implicit intents\n" +
+                        "- Start Activity / Service / Foreground Service / Broadcast\n" +
+                        "- Activity for Result\n" +
+                        "- Chooser dialog wrapping\n" +
+                        "- Extras and bundle extras\n" +
+                        "- Preset and custom intent flags\n" +
+                        "- URI preview and clipboard copy\n" +
+                        "- Launch history with replay\n" +
+                        "- Installed package/activity browser")
                 .setPositiveButton("OK", null)
                 .show();
     }
@@ -901,6 +994,12 @@ public class MainActivity extends AppCompatActivity {
     private void launchIntent() {
         try {
             Intent intent = buildIntent();
+            int selectedId = launchTypeChipGroup.getCheckedChipId();
+
+            if (isIntentBlank(intent)) {
+                showSuccess("Add a target, action, data, extra, or flag before launching");
+                return;
+            }
 
             // Wrap in chooser if enabled
             if (useChooser.isChecked()) {
@@ -910,27 +1009,25 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(TAG, "Launching: " + intent.toUri(Intent.URI_INTENT_SCHEME));
 
-            int selectedId = launchTypeChipGroup.getCheckedChipId();
-
             if (selectedId == R.id.chipActivity) {
                 startActivity(intent);
-                showSuccess("Activity launched ✓");
+                showSuccess("Activity launched");
             } else if (selectedId == R.id.chipService) {
                 startService(intent);
-                showSuccess("Service started ✓");
+                showSuccess("Service started");
             } else if (selectedId == R.id.chipFgService) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(intent);
                 } else {
                     startService(intent);
                 }
-                showSuccess("Foreground service started ✓");
+                showSuccess("Foreground service started");
             } else if (selectedId == R.id.chipBroadcast) {
                 sendBroadcast(intent);
-                showSuccess("Broadcast sent ✓");
+                showSuccess("Broadcast sent");
             } else if (selectedId == R.id.chipActivityResult) {
                 activityResultLauncher.launch(intent);
-                showSuccess("Activity for result launched ✓");
+                showSuccess("Activity for result launched");
             }
 
             // Save to history on successful launch
@@ -946,6 +1043,17 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Launch error", e);
             showError("Error: " + e.getMessage());
         }
+    }
+
+    private boolean isIntentBlank(Intent intent) {
+        return intent.getComponent() == null
+                && intent.getPackage() == null
+                && intent.getAction() == null
+                && intent.getData() == null
+                && intent.getType() == null
+                && intent.getCategories() == null
+                && (intent.getExtras() == null || intent.getExtras().isEmpty())
+                && intent.getFlags() == 0;
     }
 
     private void saveToHistory() {
@@ -977,7 +1085,7 @@ public class MainActivity extends AppCompatActivity {
             String uri = intent.toUri(Intent.URI_INTENT_SCHEME);
             ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             cm.setPrimaryClip(ClipData.newPlainText("Intent URI", uri));
-            showSuccess("Intent URI copied to clipboard ✓");
+            showSuccess("Intent URI copied to clipboard");
         } catch (Exception e) {
             showError("Could not copy: " + e.getMessage());
         }

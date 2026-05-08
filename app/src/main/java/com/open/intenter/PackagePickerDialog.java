@@ -29,6 +29,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -135,12 +136,12 @@ public class PackagePickerDialog extends BottomSheetDialogFragment {
 
     private void filter(String query) {
         filteredApps.clear();
-        String q = query.toLowerCase().trim();
+        String q = query.toLowerCase(Locale.ROOT).trim();
         if (q.isEmpty()) {
             filteredApps.addAll(allApps);
         } else {
             for (AppEntry e : allApps) {
-                if (e.label.toLowerCase().contains(q) || e.packageName.toLowerCase().contains(q)) {
+                if (e.label.toLowerCase(Locale.ROOT).contains(q) || e.packageName.toLowerCase(Locale.ROOT).contains(q)) {
                     filteredApps.add(e);
                 }
             }
@@ -194,10 +195,10 @@ public class PackagePickerDialog extends BottomSheetDialogFragment {
             @Override public void onTextChanged(CharSequence s, int st, int b, int c) {}
             @Override
             public void afterTextChanged(Editable s) {
-                String q = s.toString().toLowerCase().trim();
+                String q = s.toString().toLowerCase(Locale.ROOT).trim();
                 List<String> filtered = new ArrayList<>();
                 for (String name : activityNames) {
-                    if (q.isEmpty() || name.toLowerCase().contains(q)) {
+                    if (q.isEmpty() || name.toLowerCase(Locale.ROOT).contains(q)) {
                         filtered.add(name);
                     }
                 }

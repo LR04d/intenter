@@ -4,21 +4,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground">
+    android:background="@color/app_page_bg">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/app_surface"
         android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/historyToolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Launch History"
-            app:subtitle="Tap to re-launch"
+            android:background="@color/app_surface"
+            app:menu="@menu/history_menu"
             app:navigationIcon="?attr/homeAsUpIndicator"
-            app:menu="@menu/history_menu" />
+            app:subtitle="Tap an entry to restore it"
+            app:title="Launch history"
+            app:titleTextColor="@color/app_on_surface"
+            app:subtitleTextColor="@color/app_on_surface_variant" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -26,41 +30,49 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:padding="12dp"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="12dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <!-- Empty state -->
     <LinearLayout
         android:id="@+id/emptyStateLayout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
         android:orientation="vertical"
+        android:padding="32dp"
         android:visibility="gone">
 
         <com.google.android.material.textview.MaterialTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📭"
-            android:textSize="48sp" />
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/circle_bg"
+            android:gravity="center"
+            android:text="0"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="@color/app_primary"
+            android:textStyle="bold" />
 
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="No launch history yet"
+            android:layout_marginTop="16dp"
+            android:text="No launch history"
             android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="@color/app_on_surface"
+            android:textStyle="bold" />
 
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Launched intents will appear here"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="Successful launches are saved here for quick reuse."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/app_on_surface_variant" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

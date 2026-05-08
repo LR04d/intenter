@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_primary">#5FD4C8</color>
+    <color name="app_primary_dark">#2AAFA4</color>
+    <color name="app_secondary">#9DBCE1</color>
+    <color name="app_tertiary">#E8A57E</color>
+    <color name="app_page_bg">#101418</color>
+    <color name="app_surface">#181D23</color>
+    <color name="app_surface_alt">#20272E</color>
+    <color name="app_surface_subtle">#1D242B</color>
+    <color name="app_on_primary">#052F2B</color>
+    <color name="app_on_surface">#F3F6F8</color>
+    <color name="app_on_surface_variant">#B4BEC9</color>
+    <color name="app_outline">#3A4651</color>
+    <color name="app_outline_variant">#2A333D</color>
+    <color name="app_code_bg">#0B1117</color>
+    <color name="app_code_text">#DDE7F0</color>
+    <color name="app_success">#7CCB84</color>
+    <color name="app_warning">#E6B35A</color>
+    <color name="app_error">#FFB4AB</color>
+    <color name="app_chip_bg">#173C38</color>
+    <color name="app_chip_text">#C8FFF6</color>
+    <color name="app_badge_bg">#27313A</color>
+
+    <color name="colorPrimary">@color/app_primary</color>
+    <color name="colorPrimaryDark">@color/app_primary_dark</color>
+    <color name="colorAccent">@color/app_secondary</color>
+    <color name="colorBackground">@color/app_page_bg</color>
+    <color name="colorSurface">@color/app_surface</color>
+    <color name="colorOnPrimary">@color/app_on_primary</color>
+    <color name="colorOnBackground">@color/app_on_surface</color>
+    <color name="colorOnSurface">@color/app_on_surface</color>
+    <color name="colorSurfaceVariant">@color/app_surface_alt</color>
+    <color name="colorError">@color/app_error</color>
+    <color name="colorSuccess">@color/app_success</color>
+    <color name="colorWarning">@color/app_warning</color>
+    <color name="chip_bg">@color/app_chip_bg</color>
+    <color name="section_header_bg">@color/app_surface_subtle</color>
+</resources>

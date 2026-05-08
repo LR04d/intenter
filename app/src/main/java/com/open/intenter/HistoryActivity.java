@@ -146,23 +146,23 @@ public class HistoryActivity extends AppCompatActivity {
             switch (lt) {
                 case "chipService":
                     ltDisplay = "Service";
-                    icon = "⚙️";
+                    icon = "S";
                     break;
                 case "chipFgService":
                     ltDisplay = "FG Service";
-                    icon = "🔧";
+                    icon = "FG";
                     break;
                 case "chipBroadcast":
                     ltDisplay = "Broadcast";
-                    icon = "📡";
+                    icon = "B";
                     break;
                 case "chipActivityResult":
                     ltDisplay = "For Result";
-                    icon = "🔄";
+                    icon = "R";
                     break;
                 default:
                     ltDisplay = "Activity";
-                    icon = "🚀";
+                    icon = "A";
                     break;
             }
             holder.launchType.setText(ltDisplay);

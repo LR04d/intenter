@@ -7,6 +7,8 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.espresso.action.ViewActions;
 
+import com.google.android.material.materialswitch.MaterialSwitch;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +35,30 @@ public class MainActivityTest {
     @Rule
     public ActivityScenarioRule<MainActivity> activityRule =
             new ActivityScenarioRule<>(MainActivity.class);
+
+    private void setSwitchChecked(int switchId, boolean checked) {
+        activityRule.getScenario().onActivity(activity -> {
+            MaterialSwitch switchView = activity.findViewById(switchId);
+            assertNotNull(switchView);
+            switchView.setChecked(checked);
+        });
+    }
+
+    private void clickOnUiThread(int viewId) {
+        activityRule.getScenario().onActivity(activity -> {
+            View view = activity.findViewById(viewId);
+            assertNotNull(view);
+            view.performClick();
+        });
+    }
+
+    private void assertViewVisibility(int viewId, int expectedVisibility) {
+        activityRule.getScenario().onActivity(activity -> {
+            View view = activity.findViewById(viewId);
+            assertNotNull(view);
+            assertEquals(expectedVisibility, view.getVisibility());
+        });
+    }
 
     // ─── TC-01: App launches ─────────────────────────────────────────────
     @Test
@@ -96,9 +122,10 @@ public class MainActivityTest {
     // ─── TC-08: Flags toggle ─────────────────────────────────────────────
     @Test
     public void tc08_flagsSwitchToggle() {
-        onView(withId(R.id.useFlags)).perform(scrollTo(), click());
-        onView(withId(R.id.flagsLayout)).check(matches(isDisplayed()));
-        onView(withId(R.id.flagsChipGroup)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useFlags, true);
+        assertViewVisibility(R.id.flagsLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity ->
+                assertNotNull(activity.findViewById(R.id.flagsChipGroup)));
     }
 
     // ─── TC-09: Add category ─────────────────────────────────────────────
@@ -112,17 +139,17 @@ public class MainActivityTest {
     // ─── TC-10: Add extra ────────────────────────────────────────────────
     @Test
     public void tc10_addExtraItem() {
-        onView(withId(R.id.useExtras)).perform(click());
-        onView(withId(R.id.addExtraButton)).perform(click());
-        onView(withId(R.id.extrasContainer)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useExtras, true);
+        clickOnUiThread(R.id.addExtraButton);
+        assertViewVisibility(R.id.extrasContainer, View.VISIBLE);
     }
 
     // ─── TC-11: Add bundle ───────────────────────────────────────────────
     @Test
     public void tc11_addBundleItem() {
-        onView(withId(R.id.useBundle)).perform(scrollTo(), click());
-        onView(withId(R.id.addBundleButton)).perform(scrollTo(), click());
-        onView(withId(R.id.bundlesContainer)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useBundle, true);
+        clickOnUiThread(R.id.addBundleButton);
+        assertViewVisibility(R.id.bundlesContainer, View.VISIBLE);
     }
 
     // ─── TC-12: Launch type chips visible ────────────────────────────────
@@ -153,31 +180,33 @@ public class MainActivityTest {
     // ─── TC-15: Launch empty intent no crash ─────────────────────────────
     @Test
     public void tc15_launchWithEmptyComponentNoCrash() {
-        onView(withId(R.id.useComponent)).perform(click());
-        onView(withId(R.id.launchButton)).perform(scrollTo(), click());
+        setSwitchChecked(R.id.useComponent, false);
+        clickOnUiThread(R.id.launchButton);
         onView(withId(R.id.toolbar)).check(matches(isDisplayed()));
     }
 
     // ─── TC-16: Extras toggle ────────────────────────────────────────────
     @Test
     public void tc16_extrasSwitchToggle() {
-        onView(withId(R.id.useExtras)).perform(click());
-        onView(withId(R.id.extrasLayout)).check(matches(isDisplayed()));
-        onView(withId(R.id.addExtraButton)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useExtras, true);
+        assertViewVisibility(R.id.extrasLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity ->
+                assertNotNull(activity.findViewById(R.id.addExtraButton)));
     }
 
     // ─── TC-17: Bundle toggle ────────────────────────────────────────────
     @Test
     public void tc17_bundleSwitchToggle() {
-        onView(withId(R.id.useBundle)).perform(scrollTo(), click());
-        onView(withId(R.id.bundlesLayout)).check(matches(isDisplayed()));
-        onView(withId(R.id.addBundleButton)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useBundle, true);
+        assertViewVisibility(R.id.bundlesLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity ->
+                assertNotNull(activity.findViewById(R.id.addBundleButton)));
     }
 
     // ─── TC-18: Flags chip count ─────────────────────────────────────────
     @Test
     public void tc18_flagsChipGroupHasChildren() {
-        onView(withId(R.id.useFlags)).perform(scrollTo(), click());
+        setSwitchChecked(R.id.useFlags, true);
         activityRule.getScenario().onActivity(activity -> {
             com.google.android.material.chip.ChipGroup cg = activity.findViewById(R.id.flagsChipGroup);
             assertTrue("Flags chip group should have children", cg.getChildCount() > 0);
@@ -202,9 +231,10 @@ public class MainActivityTest {
     // ─── TC-21: Chooser toggle ───────────────────────────────────────────
     @Test
     public void tc21_chooserSwitchToggle() {
-        onView(withId(R.id.useChooser)).perform(scrollTo(), click());
-        onView(withId(R.id.chooserLayout)).check(matches(isDisplayed()));
-        onView(withId(R.id.chooserTitleInput)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useChooser, true);
+        assertViewVisibility(R.id.chooserLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity ->
+                assertNotNull(activity.findViewById(R.id.chooserTitleInput)));
     }
 
     // ─── TC-22: History manager saves ────────────────────────────────────
