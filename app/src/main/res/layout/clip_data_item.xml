@@ -18,28 +18,45 @@
         android:padding="8dp">
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTextInputLayoutDropdown"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:hint="Type">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/clipItemTypeSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             style="@style/AppTextInputLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:hint="Category"
+            android:hint="Value"
             app:endIconMode="clear_text">
 
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:id="@+id/categoryInput"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/clipItemValueInput"
+                style="@style/AppEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
                 android:inputType="text"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/removeCategoryButton"
+            android:id="@+id/removeClipItemButton"
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:contentDescription="Remove category"
+            android:contentDescription="Remove clip item"
             app:icon="@drawable/ic_delete"
             app:iconTint="@color/app_error" />
     </LinearLayout>

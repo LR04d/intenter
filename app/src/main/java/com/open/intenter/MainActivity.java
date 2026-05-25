@@ -55,14 +55,20 @@ public class MainActivity extends AppCompatActivity {
 
     // ── Action ─────────────────────────────────────────────────────────────
     private MaterialSwitch useActions;
-    private LinearLayout actionsLayout;
-    private MaterialAutoCompleteTextView actionInput;
+    private LinearLayout actionsLayout, actionsContainer;
+    private List<ActionItem> actionsList = new ArrayList<>();
 
     // ── Data ───────────────────────────────────────────────────────────────
     private MaterialSwitch useData;
     private LinearLayout dataLayout;
     private TextInputEditText dataUriInput;
     private MaterialAutoCompleteTextView dataTypeInput;
+
+    // ── Clip Data ──────────────────────────────────────────────────────────
+    private MaterialSwitch useClipData;
+    private LinearLayout clipDataLayout, clipDataItemsContainer;
+    private TextInputEditText clipDataLabelInput, clipDataMimeTypesInput;
+    private List<ClipDataItemRow> clipDataItemsList = new ArrayList<>();
 
     // ── Categories ─────────────────────────────────────────────────────────
     private MaterialSwitch useCategory;
@@ -106,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
 
     // ── Activity for Result ────────────────────────────────────────────────
     private ActivityResultLauncher<Intent> activityResultLauncher;
+
+    // ── Activity Log ───────────────────────────────────────────────────────
+    private TextView logText;
+    private StringBuilder activityLogBuilder = new StringBuilder();
 
     // Flag name → flag value mapping
     private static final Map<String, Integer> FLAG_MAP = new HashMap<>();
@@ -153,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
                         msg += "\nData: " + result.getData().toUri(Intent.URI_INTENT_SCHEME);
                     }
                     Log.d(TAG, msg);
+                    appendLog(msg);
                     new AlertDialog.Builder(this)
                             .setTitle("Activity Result")
                             .setMessage(msg)
@@ -183,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
         setupToolbar();
         setupSwitchListeners();
         setupFlagsChips();
-        setupActionAutocomplete();
         setupMimeTypeAutocomplete();
         setupPreviewWatchers();
         setupKeyboardAwareLayout();
@@ -196,10 +206,31 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.addCategoryButton).setOnClickListener(v -> addNewCategory());
         findViewById(R.id.addExtraButton).setOnClickListener(v -> addNewExtra());
         findViewById(R.id.addBundleButton).setOnClickListener(v -> addNewBundle());
+        findViewById(R.id.addActionButton).setOnClickListener(v -> addNewAction());
+        findViewById(R.id.addClipDataItemButton).setOnClickListener(v -> addNewClipDataItem());
         findViewById(R.id.launchButton).setOnClickListener(v -> launchIntent());
         findViewById(R.id.copyIntentButton).setOnClickListener(v -> copyIntentUri());
         findViewById(R.id.browsePackageButton).setOnClickListener(v -> showPackagePicker());
+        findViewById(R.id.clearLogButton).setOnClickListener(v -> clearLog());
         updatePreview();
+    }
+
+    private void clearLog() {
+        activityLogBuilder.setLength(0);
+        logText.setText("Waiting for launches...");
+    }
+
+    private void appendLog(String message) {
+        if (activityLogBuilder.length() == 0) {
+            activityLogBuilder.append(new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()))
+                    .append(": ").append(message);
+        } else {
+            activityLogBuilder.insert(0, "\n\n")
+                    .insert(0, message)
+                    .insert(0, ": ")
+                    .insert(0, new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()));
+        }
+        logText.setText(activityLogBuilder.toString());
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -216,12 +247,18 @@ public class MainActivity extends AppCompatActivity {
 
         useActions   = findViewById(R.id.useActions);
         actionsLayout = findViewById(R.id.actionsLayout);
-        actionInput  = findViewById(R.id.actionInput);
+        actionsContainer = findViewById(R.id.actionsContainer);
 
         useData      = findViewById(R.id.useData);
         dataLayout   = findViewById(R.id.dataLayout);
         dataUriInput = findViewById(R.id.dataUriInput);
         dataTypeInput = findViewById(R.id.dataTypeInput);
+
+        useClipData             = findViewById(R.id.useClipData);
+        clipDataLayout          = findViewById(R.id.clipDataLayout);
+        clipDataItemsContainer  = findViewById(R.id.clipDataItemsContainer);
+        clipDataLabelInput      = findViewById(R.id.clipDataLabelInput);
+        clipDataMimeTypesInput  = findViewById(R.id.clipDataMimeTypesInput);
 
         useCategory         = findViewById(R.id.useCategory);
         categoriesLayout    = findViewById(R.id.categoriesLayout);
@@ -248,6 +285,8 @@ public class MainActivity extends AppCompatActivity {
         intentPreviewText   = findViewById(R.id.intentPreviewText);
         nestedScrollView    = findViewById(R.id.nestedScrollView);
         bottomActionBar     = findViewById(R.id.bottomActionBar);
+
+        logText             = findViewById(R.id.logText);
     }
 
     private void setupToolbar() {
@@ -262,6 +301,8 @@ public class MainActivity extends AppCompatActivity {
                 actionsLayout.setVisibility(on ? View.VISIBLE : View.GONE));
         useData.setOnCheckedChangeListener((b, on) ->
                 dataLayout.setVisibility(on ? View.VISIBLE : View.GONE));
+        useClipData.setOnCheckedChangeListener((b, on) ->
+                clipDataLayout.setVisibility(on ? View.VISIBLE : View.GONE));
         useCategory.setOnCheckedChangeListener((b, on) ->
                 categoriesLayout.setVisibility(on ? View.VISIBLE : View.GONE));
         useExtras.setOnCheckedChangeListener((b, on) ->
@@ -286,14 +327,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupActionAutocomplete() {
-        String[] actions = getResources().getStringArray(R.array.intent_actions);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, actions);
-        actionInput.setAdapter(adapter);
-        actionInput.setThreshold(1);
-    }
-
     private void setupMimeTypeAutocomplete() {
         String[] mimeTypes = getResources().getStringArray(R.array.mime_types);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -310,15 +343,17 @@ public class MainActivity extends AppCompatActivity {
         };
         packageInput.addTextChangedListener(watcher);
         componentInput.addTextChangedListener(watcher);
-        actionInput.addTextChangedListener(watcher);
         dataUriInput.addTextChangedListener(watcher);
         dataTypeInput.addTextChangedListener(watcher);
+        clipDataLabelInput.addTextChangedListener(watcher);
+        clipDataMimeTypesInput.addTextChangedListener(watcher);
         chooserTitleInput.addTextChangedListener(watcher);
 
         // Override switch listeners to also trigger preview update
         useComponent.setOnCheckedChangeListener((b, on) -> { componentLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useActions.setOnCheckedChangeListener((b, on) -> { actionsLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useData.setOnCheckedChangeListener((b, on) -> { dataLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
+        useClipData.setOnCheckedChangeListener((b, on) -> { clipDataLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useCategory.setOnCheckedChangeListener((b, on) -> { categoriesLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useExtras.setOnCheckedChangeListener((b, on) -> { extrasLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
         useBundle.setOnCheckedChangeListener((b, on) -> { bundlesLayout.setVisibility(on ? View.VISIBLE : View.GONE); updatePreview(); });
@@ -458,9 +493,14 @@ public class MainActivity extends AppCompatActivity {
     private void clearAll() {
         packageInput.setText("");
         componentInput.setText("");
-        actionInput.setText("");
+        actionsContainer.removeAllViews();
+        actionsList.clear();
         dataUriInput.setText("");
         dataTypeInput.setText("");
+        clipDataLabelInput.setText("");
+        clipDataMimeTypesInput.setText("");
+        clipDataItemsContainer.removeAllViews();
+        clipDataItemsList.clear();
         customFlagsInput.setText("");
         chooserTitleInput.setText("");
         categoriesContainer.removeAllViews();
@@ -475,6 +515,7 @@ public class MainActivity extends AppCompatActivity {
         useComponent.setChecked(true);
         useActions.setChecked(false);
         useData.setChecked(false);
+        useClipData.setChecked(false);
         useCategory.setChecked(false);
         useExtras.setChecked(false);
         useBundle.setChecked(false);
@@ -530,19 +571,41 @@ public class MainActivity extends AppCompatActivity {
         updatePreview();
     }
 
-    private void addNewExtra() {
-        addExtraToContainer(extrasContainer, extrasList);
+    private void addNewAction() {
+        View view = getLayoutInflater().inflate(R.layout.action_item, actionsContainer, false);
+        MaterialAutoCompleteTextView input = view.findViewById(R.id.actionInput);
+        String[] actions = getResources().getStringArray(R.array.intent_actions);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, actions);
+        input.setAdapter(adapter);
+        input.setThreshold(1);
+        input.addTextChangedListener(simpleWatcher());
+
+        ActionItem item = new ActionItem(view, input);
+        actionsList.add(item);
+        actionsContainer.addView(view);
+
+        view.findViewById(R.id.removeActionButton).setOnClickListener(v -> {
+            actionsList.remove(item);
+            actionsContainer.removeView(view);
+            updatePreview();
+        });
         updatePreview();
     }
 
-    private void addExtraToContainer(LinearLayout container, List<ExtraItem> list) {
-        View view = getLayoutInflater().inflate(R.layout.extra_item, container, false);
-        TextInputEditText keyInput   = view.findViewById(R.id.extraKeyInput);
-        TextInputEditText valueInput = view.findViewById(R.id.extraValueInput);
-        MaterialAutoCompleteTextView typeView = view.findViewById(R.id.extraTypeSpinner);
+    private void addNewActionWithValues(String val) {
+        addNewAction();
+        if (!actionsList.isEmpty()) {
+            actionsList.get(actionsList.size() - 1).actionInput.setText(val);
+        }
+    }
 
-        String[] types = getResources().getStringArray(R.array.extra_types);
-        // Use a non-filterable adapter so ALL types always show in the dropdown
+    private void addNewClipDataItem() {
+        View view = getLayoutInflater().inflate(R.layout.clip_data_item, clipDataItemsContainer, false);
+        MaterialAutoCompleteTextView typeView = view.findViewById(R.id.clipItemTypeSpinner);
+        TextInputEditText valueInput = view.findViewById(R.id.clipItemValueInput);
+
+        String[] types = new String[]{"Text", "Html", "Uri"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, types) {
             @Override
@@ -564,10 +627,71 @@ public class MainActivity extends AppCompatActivity {
         };
         typeView.setAdapter(adapter);
         typeView.setText(types[0], false);
-        // Prevent keyboard — this is a pure dropdown picker
         typeView.setInputType(0);
         typeView.setKeyListener(null);
-        // Force show all items on click
+        typeView.setOnClickListener(v -> typeView.showDropDown());
+        typeView.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) typeView.showDropDown();
+        });
+
+        valueInput.addTextChangedListener(simpleWatcher());
+
+        ClipDataItemRow item = new ClipDataItemRow(view, typeView, valueInput);
+        clipDataItemsList.add(item);
+        clipDataItemsContainer.addView(view);
+
+        view.findViewById(R.id.removeClipItemButton).setOnClickListener(v -> {
+            clipDataItemsList.remove(item);
+            clipDataItemsContainer.removeView(view);
+            updatePreview();
+        });
+        updatePreview();
+    }
+
+    private void addNewClipDataItemWithValues(String type, String val) {
+        addNewClipDataItem();
+        if (!clipDataItemsList.isEmpty()) {
+            ClipDataItemRow row = clipDataItemsList.get(clipDataItemsList.size() - 1);
+            row.typeSpinner.setText(type, false);
+            row.valueInput.setText(val);
+        }
+    }
+
+    private void addNewExtra() {
+        addExtraToContainer(extrasContainer, extrasList);
+        updatePreview();
+    }
+
+    private void addExtraToContainer(LinearLayout container, List<ExtraItem> list) {
+        View view = getLayoutInflater().inflate(R.layout.extra_item, container, false);
+        TextInputEditText keyInput   = view.findViewById(R.id.extraKeyInput);
+        TextInputEditText valueInput = view.findViewById(R.id.extraValueInput);
+        MaterialAutoCompleteTextView typeView = view.findViewById(R.id.extraTypeSpinner);
+
+        String[] types = getResources().getStringArray(R.array.extra_types);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_dropdown_item_1line, types) {
+            @Override
+            public android.widget.Filter getFilter() {
+                return new android.widget.Filter() {
+                    @Override
+                    protected FilterResults performFiltering(CharSequence constraint) {
+                        FilterResults results = new FilterResults();
+                        results.values = java.util.Arrays.asList(types);
+                        results.count = types.length;
+                        return results;
+                    }
+                    @Override
+                    protected void publishResults(CharSequence constraint, FilterResults results) {
+                        notifyDataSetChanged();
+                    }
+                };
+            }
+        };
+        typeView.setAdapter(adapter);
+        typeView.setText(types[0], false);
+        typeView.setInputType(0);
+        typeView.setKeyListener(null);
         typeView.setOnClickListener(v -> typeView.showDropDown());
         typeView.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) typeView.showDropDown();
@@ -587,7 +711,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /** Adds an extra with pre-filled values (for history loading). */
     private void addExtraToContainerWithValues(LinearLayout container, List<ExtraItem> list,
                                                String key, String value, String type) {
         addExtraToContainer(container, list);
@@ -629,11 +752,32 @@ public class MainActivity extends AppCompatActivity {
         m.componentName = text(componentInput);
 
         m.useAction = useActions.isChecked();
-        m.action = actionInput.getText() == null ? "" : actionInput.getText().toString().trim();
+        for (ActionItem act : actionsList) {
+            String a = act.actionInput.getText() == null ? "" : act.actionInput.getText().toString().trim();
+            if (!a.isEmpty()) m.actions.add(a);
+        }
+        if (!m.actions.isEmpty()) {
+            m.action = m.actions.get(0);
+        }
 
         m.useData = useData.isChecked();
         m.dataUri = text(dataUriInput);
         m.mimeType = text(dataTypeInput);
+
+        m.useClipData = useClipData.isChecked();
+        m.clipDataLabel = text(clipDataLabelInput);
+        String mimeStr = text(clipDataMimeTypesInput);
+        if (!mimeStr.isEmpty()) {
+            for (String part : mimeStr.split(",")) {
+                String trimmed = part.trim();
+                if (!trimmed.isEmpty()) m.clipDataMimeTypes.add(trimmed);
+            }
+        }
+        for (ClipDataItemRow row : clipDataItemsList) {
+            String type = row.typeSpinner.getText() == null ? "Text" : row.typeSpinner.getText().toString();
+            String val = text(row.valueInput);
+            if (!val.isEmpty()) m.clipDataItems.add(new IntentModel.ClipDataItem(type, val));
+        }
 
         m.useCategory = useCategory.isChecked();
         for (CategoryItem cat : categoriesList) {
@@ -693,6 +837,8 @@ public class MainActivity extends AppCompatActivity {
         categoriesContainer.removeAllViews(); categoriesList.clear();
         extrasContainer.removeAllViews(); extrasList.clear();
         bundlesContainer.removeAllViews(); bundlesList.clear();
+        actionsContainer.removeAllViews(); actionsList.clear();
+        clipDataItemsContainer.removeAllViews(); clipDataItemsList.clear();
         for (int i = 0; i < flagsChipGroup.getChildCount(); i++) {
             ((Chip) flagsChipGroup.getChildAt(i)).setChecked(false);
         }
@@ -704,12 +850,27 @@ public class MainActivity extends AppCompatActivity {
 
         // Action
         useActions.setChecked(m.useAction);
-        actionInput.setText(m.action);
+        for (String act : m.actions) {
+            addNewActionWithValues(act);
+        }
 
         // Data
         useData.setChecked(m.useData);
         dataUriInput.setText(m.dataUri);
         dataTypeInput.setText(m.mimeType);
+
+        // Clip Data
+        useClipData.setChecked(m.useClipData);
+        clipDataLabelInput.setText(m.clipDataLabel);
+        StringBuilder mimeBuilder = new StringBuilder();
+        for (int i = 0; i < m.clipDataMimeTypes.size(); i++) {
+            mimeBuilder.append(m.clipDataMimeTypes.get(i));
+            if (i < m.clipDataMimeTypes.size() - 1) mimeBuilder.append(", ");
+        }
+        clipDataMimeTypesInput.setText(mimeBuilder.toString());
+        for (IntentModel.ClipDataItem item : m.clipDataItems) {
+            addNewClipDataItemWithValues(item.type, item.value);
+        }
 
         // Categories
         useCategory.setChecked(m.useCategory);
@@ -765,7 +926,35 @@ public class MainActivity extends AppCompatActivity {
     // ══════════════════════════════════════════════════════════════════════
 
     private Intent buildIntent() {
+        List<Intent> list = buildIntents();
+        return list.isEmpty() ? new Intent() : list.get(0);
+    }
+
+    private List<Intent> buildIntents() {
+        List<Intent> intents = new ArrayList<>();
+        List<String> activeActions = new ArrayList<>();
+        if (useActions.isChecked()) {
+            for (ActionItem act : actionsList) {
+                String a = act.actionInput.getText() == null ? "" : act.actionInput.getText().toString().trim();
+                if (!a.isEmpty()) activeActions.add(a);
+            }
+        }
+
+        if (activeActions.isEmpty()) {
+            intents.add(buildBaseIntent(null));
+        } else {
+            for (String action : activeActions) {
+                intents.add(buildBaseIntent(action));
+            }
+        }
+        return intents;
+    }
+
+    private Intent buildBaseIntent(String action) {
         Intent intent = new Intent();
+        if (action != null) {
+            intent.setAction(action);
+        }
 
         // Component
         if (useComponent.isChecked()) {
@@ -776,12 +965,6 @@ public class MainActivity extends AppCompatActivity {
             } else if (!pkg.isEmpty()) {
                 intent.setPackage(pkg);
             }
-        }
-
-        // Action
-        if (useActions.isChecked()) {
-            String action = actionInput.getText() == null ? "" : actionInput.getText().toString().trim();
-            if (!action.isEmpty()) intent.setAction(action);
         }
 
         // Data / MIME
@@ -803,6 +986,11 @@ public class MainActivity extends AppCompatActivity {
                 String c = cat.categoryInput.getText() == null ? "" : cat.categoryInput.getText().toString().trim();
                 if (!c.isEmpty()) intent.addCategory(c);
             }
+        }
+
+        // Clip Data
+        if (useClipData.isChecked()) {
+            applyClipDataToIntent(intent);
         }
 
         // Extras
@@ -830,6 +1018,53 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return intent;
+    }
+
+    private void applyClipDataToIntent(Intent intent) {
+        if (clipDataItemsList.isEmpty()) return;
+
+        ClipData clipData = null;
+        String label = text(clipDataLabelInput);
+        if (label.isEmpty()) label = "Intenter ClipData";
+
+        String mimesInput = text(clipDataMimeTypesInput);
+        List<String> mimeList = new ArrayList<>();
+        if (!mimesInput.isEmpty()) {
+            for (String part : mimesInput.split(",")) {
+                String trimmed = part.trim();
+                if (!trimmed.isEmpty()) mimeList.add(trimmed);
+            }
+        }
+        if (mimeList.isEmpty()) {
+            mimeList.add("text/plain"); // fallback
+        }
+        String[] mimes = mimeList.toArray(new String[0]);
+
+        for (int i = 0; i < clipDataItemsList.size(); i++) {
+            ClipDataItemRow row = clipDataItemsList.get(i);
+            String type = row.typeSpinner.getText() == null ? "Text" : row.typeSpinner.getText().toString();
+            String val = text(row.valueInput);
+            if (val.isEmpty()) continue;
+
+            ClipData.Item clipItem;
+            if ("Uri".equals(type)) {
+                clipItem = new ClipData.Item(Uri.parse(val));
+            } else if ("Html".equals(type)) {
+                clipItem = new ClipData.Item(null, val);
+            } else {
+                clipItem = new ClipData.Item(val);
+            }
+
+            if (clipData == null) {
+                clipData = new ClipData(label, mimes, clipItem);
+            } else {
+                clipData.addItem(clipItem);
+            }
+        }
+
+        if (clipData != null) {
+            intent.setClipData(clipData);
+        }
     }
 
     private void applyExtrasToIntent(Intent intent, List<ExtraItem> list) {
@@ -993,41 +1228,50 @@ public class MainActivity extends AppCompatActivity {
 
     private void launchIntent() {
         try {
-            Intent intent = buildIntent();
+            List<Intent> intents = buildIntents();
             int selectedId = launchTypeChipGroup.getCheckedChipId();
 
-            if (isIntentBlank(intent)) {
+            if (intents.isEmpty() || (intents.size() == 1 && isIntentBlank(intents.get(0)))) {
                 showSuccess("Add a target, action, data, extra, or flag before launching");
                 return;
             }
 
-            // Wrap in chooser if enabled
-            if (useChooser.isChecked()) {
-                String title = text(chooserTitleInput);
-                intent = Intent.createChooser(intent, title.isEmpty() ? null : title);
+            int count = 0;
+            for (Intent intent : intents) {
+                if (useChooser.isChecked()) {
+                    String title = text(chooserTitleInput);
+                    intent = Intent.createChooser(intent, title.isEmpty() ? null : title);
+                }
+
+                Log.d(TAG, "Launching: " + intent.toUri(Intent.URI_INTENT_SCHEME));
+                appendLog("Launching: " + intent.toUri(Intent.URI_INTENT_SCHEME));
+
+                if (selectedId == R.id.chipActivity) {
+                    startActivity(intent);
+                } else if (selectedId == R.id.chipService) {
+                    startService(intent);
+                } else if (selectedId == R.id.chipFgService) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(intent);
+                    } else {
+                        startService(intent);
+                    }
+                } else if (selectedId == R.id.chipBroadcast) {
+                    sendBroadcast(intent);
+                } else if (selectedId == R.id.chipActivityResult) {
+                    activityResultLauncher.launch(intent);
+                }
+                count++;
             }
 
-            Log.d(TAG, "Launching: " + intent.toUri(Intent.URI_INTENT_SCHEME));
-
-            if (selectedId == R.id.chipActivity) {
-                startActivity(intent);
-                showSuccess("Activity launched");
-            } else if (selectedId == R.id.chipService) {
-                startService(intent);
-                showSuccess("Service started");
-            } else if (selectedId == R.id.chipFgService) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(intent);
-                } else {
-                    startService(intent);
-                }
-                showSuccess("Foreground service started");
-            } else if (selectedId == R.id.chipBroadcast) {
-                sendBroadcast(intent);
-                showSuccess("Broadcast sent");
-            } else if (selectedId == R.id.chipActivityResult) {
-                activityResultLauncher.launch(intent);
-                showSuccess("Activity for result launched");
+            if (count > 1) {
+                showSuccess(count + " intents launched sequentially");
+            } else {
+                if (selectedId == R.id.chipActivity) showSuccess("Activity launched");
+                else if (selectedId == R.id.chipService) showSuccess("Service started");
+                else if (selectedId == R.id.chipFgService) showSuccess("Foreground service started");
+                else if (selectedId == R.id.chipBroadcast) showSuccess("Broadcast sent");
+                else if (selectedId == R.id.chipActivityResult) showSuccess("Activity for result launched");
             }
 
             // Save to history on successful launch
@@ -1071,9 +1315,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void updatePreview() {
         try {
-            Intent intent = buildIntent();
-            String uri = intent.toUri(Intent.URI_INTENT_SCHEME);
-            intentPreviewText.setText(uri);
+            List<Intent> intents = buildIntents();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < intents.size(); i++) {
+                sb.append(intents.get(i).toUri(Intent.URI_INTENT_SCHEME));
+                if (i < intents.size() - 1) {
+                    sb.append("\n\n");
+                }
+            }
+            intentPreviewText.setText(sb.toString());
         } catch (Exception e) {
             intentPreviewText.setText("(invalid intent: " + e.getMessage() + ")");
         }
@@ -1081,11 +1331,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void copyIntentUri() {
         try {
-            Intent intent = buildIntent();
-            String uri = intent.toUri(Intent.URI_INTENT_SCHEME);
+            List<Intent> intents = buildIntents();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < intents.size(); i++) {
+                sb.append(intents.get(i).toUri(Intent.URI_INTENT_SCHEME));
+                if (i < intents.size() - 1) {
+                    sb.append("\n");
+                }
+            }
             ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            cm.setPrimaryClip(ClipData.newPlainText("Intent URI", uri));
-            showSuccess("Intent URI copied to clipboard");
+            cm.setPrimaryClip(ClipData.newPlainText("Intent URIs", sb.toString()));
+            showSuccess("Intent URI(s) copied to clipboard");
         } catch (Exception e) {
             showError("Could not copy: " + e.getMessage());
         }
@@ -1127,6 +1383,21 @@ public class MainActivity extends AppCompatActivity {
         View view;
         MaterialAutoCompleteTextView categoryInput;
         CategoryItem(View v, MaterialAutoCompleteTextView i) { view = v; categoryInput = i; }
+    }
+
+    private static class ActionItem {
+        View view;
+        MaterialAutoCompleteTextView actionInput;
+        ActionItem(View v, MaterialAutoCompleteTextView i) { view = v; actionInput = i; }
+    }
+
+    private static class ClipDataItemRow {
+        View view;
+        MaterialAutoCompleteTextView typeSpinner;
+        TextInputEditText valueInput;
+        ClipDataItemRow(View v, MaterialAutoCompleteTextView t, TextInputEditText val) {
+            view = v; typeSpinner = t; valueInput = val;
+        }
     }
 
     private static class ExtraItem {

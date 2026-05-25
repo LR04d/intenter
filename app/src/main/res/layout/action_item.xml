@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:layout_marginTop="4dp"
+    app:cardBackgroundColor="@color/app_surface_subtle"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/app_outline_variant"
+    app:strokeWidth="1dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_weight="1"
-        android:hint="Action"
-        app:endIconMode="clear_text">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/actionInput"
-            android:layout_width="match_parent"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/AppTextInputLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:hint="Action"
+            app:endIconMode="clear_text">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/removeActionButton"
-        style="@style/Widget.Material3.Button.IconButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:contentDescription="Remove action"
-        app:icon="@drawable/ic_delete"
-        app:iconTint="@color/app_error" />
-</LinearLayout>
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actionInput"
+                style="@style/AppEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/removeActionButton"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Remove action"
+            app:icon="@drawable/ic_delete"
+            app:iconTint="@color/app_error" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

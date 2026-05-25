@@ -24,6 +24,7 @@ public class IntentModel {
     // Action
     public boolean useAction;
     public String action = "";
+    public List<String> actions = new ArrayList<>();
 
     // Data
     public boolean useData;
@@ -57,7 +58,38 @@ public class IntentModel {
     // Permission (for broadcasts)
     public String permission = "";
 
+    // Clip Data
+    public boolean useClipData;
+    public String clipDataLabel = "";
+    public List<String> clipDataMimeTypes = new ArrayList<>();
+    public List<ClipDataItem> clipDataItems = new ArrayList<>();
+
     // ─── Nested types ────────────────────────────────────────────────────
+
+    public static class ClipDataItem {
+        public String type = "Text"; // Text, Html, Uri
+        public String value = "";
+
+        public ClipDataItem() {}
+        public ClipDataItem(String type, String value) {
+            this.type = type;
+            this.value = value;
+        }
+
+        public JSONObject toJson() throws JSONException {
+            JSONObject o = new JSONObject();
+            o.put("type", type);
+            o.put("value", value);
+            return o;
+        }
+
+        public static ClipDataItem fromJson(JSONObject o) throws JSONException {
+            ClipDataItem item = new ClipDataItem();
+            item.type = o.optString("type", "Text");
+            item.value = o.optString("value", "");
+            return item;
+        }
+    }
 
     public static class ExtraEntry {
         public String key = "";
@@ -129,6 +161,9 @@ public class IntentModel {
 
         o.put("useAction", useAction);
         o.put("action", action);
+        JSONArray actArr = new JSONArray();
+        for (String a : actions) actArr.put(a);
+        o.put("actions", actArr);
 
         o.put("useData", useData);
         o.put("dataUri", dataUri);
@@ -161,6 +196,15 @@ public class IntentModel {
         o.put("chooserTitle", chooserTitle);
         o.put("permission", permission);
 
+        o.put("useClipData", useClipData);
+        o.put("clipDataLabel", clipDataLabel);
+        JSONArray cdMimes = new JSONArray();
+        for (String m : clipDataMimeTypes) cdMimes.put(m);
+        o.put("clipDataMimeTypes", cdMimes);
+        JSONArray cdItems = new JSONArray();
+        for (ClipDataItem item : clipDataItems) cdItems.put(item.toJson());
+        o.put("clipDataItems", cdItems);
+
         return o;
     }
 
@@ -175,6 +219,15 @@ public class IntentModel {
 
         m.useAction = o.optBoolean("useAction", false);
         m.action = o.optString("action", "");
+        JSONArray actArr = o.optJSONArray("actions");
+        if (actArr != null) {
+            for (int i = 0; i < actArr.length(); i++) {
+                m.actions.add(actArr.getString(i));
+            }
+        }
+        if (m.actions.isEmpty() && !m.action.isEmpty()) {
+            m.actions.add(m.action);
+        }
 
         m.useData = o.optBoolean("useData", false);
         m.dataUri = o.optString("dataUri", "");
@@ -215,18 +268,42 @@ public class IntentModel {
         m.chooserTitle = o.optString("chooserTitle", "");
         m.permission = o.optString("permission", "");
 
+        m.useClipData = o.optBoolean("useClipData", false);
+        m.clipDataLabel = o.optString("clipDataLabel", "");
+        JSONArray cdMimes = o.optJSONArray("clipDataMimeTypes");
+        if (cdMimes != null) {
+            for (int i = 0; i < cdMimes.length(); i++) {
+                m.clipDataMimeTypes.add(cdMimes.getString(i));
+            }
+        }
+        JSONArray cdItems = o.optJSONArray("clipDataItems");
+        if (cdItems != null) {
+            for (int i = 0; i < cdItems.length(); i++) {
+                m.clipDataItems.add(ClipDataItem.fromJson(cdItems.getJSONObject(i)));
+            }
+        }
+
         return m;
     }
 
     /** Generate a human-readable label for the history list */
     public String generateLabel() {
         StringBuilder sb = new StringBuilder();
-        if (!action.isEmpty()) {
-            String shortAction = action;
+        String primaryAction = "";
+        if (!actions.isEmpty()) {
+            primaryAction = actions.get(0);
+        } else if (!action.isEmpty()) {
+            primaryAction = action;
+        }
+        if (!primaryAction.isEmpty()) {
+            String shortAction = primaryAction;
             if (shortAction.startsWith("android.intent.action.")) {
                 shortAction = shortAction.substring("android.intent.action.".length());
             }
             sb.append(shortAction);
+            if (actions.size() > 1) {
+                sb.append(" (+").append(actions.size() - 1).append(")");
+            }
         }
         if (!packageName.isEmpty()) {
             if (sb.length() > 0) sb.append(" → ");
