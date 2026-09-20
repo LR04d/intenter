@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Intenter</string>
+    <string name="nav_build">Build</string>
+    <string name="nav_provider">Provider</string>
+    <string name="nav_inbox">Inbox</string>
+    <string name="nav_saved">Saved</string>
+    <string name="launch_intent">Launch</string>
+    <string name="menu_import">Paste / import intent</string>
+    <string name="menu_save_favorite">Save as favorite</string>
+    <string name="menu_clear">Clear form</string>
+    <string name="menu_about">About</string>
+    <string name="menu_clear_inbox">Clear inbox</string>
+    <string name="receiver_activity_label">Intenter receiver</string>
 </resources>

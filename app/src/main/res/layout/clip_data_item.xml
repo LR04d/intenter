@@ -1,63 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="4dp"
-    app:cardBackgroundColor="@color/app_surface_subtle"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="0dp"
-    app:strokeColor="@color/app_outline_variant"
-    app:strokeWidth="1dp">
+    android:layout_marginTop="6dp"
+    android:gravity="top"
+    android:orientation="horizontal">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/AppTextInputLayoutDropdown"
+        android:layout_width="112dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:hint="Type">
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/AppTextInputLayoutDropdown"
-            android:layout_width="110dp"
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/clipItemTypeSpinner"
+            style="@style/AppEditText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:hint="Type">
+            android:inputType="none" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:id="@+id/clipItemTypeSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none" />
-        </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/AppTextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1"
+        android:hint="Value"
+        app:endIconMode="clear_text">
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/AppTextInputLayout"
-            android:layout_width="0dp"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/clipItemValueInput"
+            style="@style/AppCodeEditText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:hint="Value"
-            app:endIconMode="clear_text">
+            android:imeOptions="actionNext"
+            android:inputType="textMultiLine"
+            android:maxLines="3" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/clipItemValueInput"
-                style="@style/AppEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:imeOptions="actionNext"
-                android:inputType="text"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/removeClipItemButton"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Remove clip item"
-            app:icon="@drawable/ic_delete"
-            app:iconTint="@color/app_error" />
-    </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/removeClipItemButton"
+        style="@style/RemoveRowButton"
+        android:layout_marginTop="2dp"
+        android:contentDescription="Remove clip item" />
+</LinearLayout>

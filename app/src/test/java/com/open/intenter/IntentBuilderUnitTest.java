@@ -263,10 +263,9 @@ public class IntentBuilderUnitTest {
         assertFalse(m.useData);
         assertFalse(m.useFlags);
         assertFalse(m.useChooser);
-        assertEquals("chipActivity", m.launchType);
+        assertEquals(IntentModel.MODE_ACTIVITY, m.launchType);
         assertTrue(m.categories.isEmpty());
         assertTrue(m.extras.isEmpty());
-        assertTrue(m.bundles.isEmpty());
         assertTrue(m.flagNames.isEmpty());
     }
 
@@ -287,9 +286,10 @@ public class IntentBuilderUnitTest {
     }
 
     @Test
-    public void bundleEntry_defaultValues() {
-        IntentModel.BundleEntry b = new IntentModel.BundleEntry();
-        assertEquals("", b.key);
-        assertTrue(b.extras.isEmpty());
+    public void bundleEntry_nestedChildren() {
+        IntentModel.ExtraEntry b = IntentModel.ExtraEntry.bundle("b", new java.util.ArrayList<>());
+        assertEquals("b", b.key);
+        assertEquals(ExtraTypes.BUNDLE, b.type);
+        assertTrue(b.children.isEmpty());
     }
 }

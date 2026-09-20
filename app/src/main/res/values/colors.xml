@@ -1,27 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand -->
     <color name="app_primary">#0F766E</color>
     <color name="app_primary_dark">#0B4F4A</color>
+    <color name="app_on_primary">#FFFFFF</color>
+    <color name="app_primary_container">#CCF3EC</color>
+    <color name="app_on_primary_container">#033D38</color>
     <color name="app_secondary">#335C81</color>
+    <color name="app_on_secondary">#FFFFFF</color>
+    <color name="app_secondary_container">#D6E6F5</color>
+    <color name="app_on_secondary_container">#0F2A45</color>
     <color name="app_tertiary">#A4552F</color>
+    <color name="app_on_tertiary">#FFFFFF</color>
+    <color name="app_tertiary_container">#FFDCCB</color>
+    <color name="app_on_tertiary_container">#3A1400</color>
+
+    <!-- Surfaces -->
     <color name="app_page_bg">#F5F7FA</color>
     <color name="app_surface">#FFFFFF</color>
     <color name="app_surface_alt">#EEF3F4</color>
     <color name="app_surface_subtle">#F8FAFC</color>
-    <color name="app_on_primary">#FFFFFF</color>
+    <color name="app_surface_container_lowest">#FFFFFF</color>
+    <color name="app_surface_container_low">#F3F6F8</color>
+    <color name="app_surface_container">#EEF2F5</color>
+    <color name="app_surface_container_high">#E8EDF1</color>
+    <color name="app_surface_container_highest">#E1E7EC</color>
+    <color name="app_inverse_surface">#1F2937</color>
+    <color name="app_inverse_on_surface">#F3F6F8</color>
+    <color name="app_inverse_primary">#5FD4C8</color>
     <color name="app_on_surface">#111827</color>
     <color name="app_on_surface_variant">#536171</color>
     <color name="app_outline">#CCD5DF</color>
     <color name="app_outline_variant">#E3E8EF</color>
+
+    <!-- Code panel -->
     <color name="app_code_bg">#111827</color>
     <color name="app_code_text">#E5EEF7</color>
+    <color name="app_code_muted">#8B98A9</color>
+
+    <!-- Semantic -->
     <color name="app_success">#2E7D32</color>
+    <color name="app_success_container">#DDF3DF</color>
     <color name="app_warning">#B76E00</color>
+    <color name="app_warning_container">#FFEBCF</color>
     <color name="app_error">#B3261E</color>
+    <color name="app_on_error">#FFFFFF</color>
+    <color name="app_error_container">#F9DEDC</color>
+    <color name="app_on_error_container">#410E0B</color>
     <color name="app_chip_bg">#E6F4F1</color>
     <color name="app_chip_text">#064E46</color>
     <color name="app_badge_bg">#EAF0F6</color>
 
+    <!-- Legacy aliases -->
     <color name="colorPrimary">@color/app_primary</color>
     <color name="colorPrimaryDark">@color/app_primary_dark</color>
     <color name="colorAccent">@color/app_secondary</color>

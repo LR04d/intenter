@@ -9,11 +9,90 @@ import java.util.List;
 
 /**
  * Data model representing a fully configured Intent.
- * Serializable to/from JSON for history persistence.
+ * Serializable to/from JSON for history, favorites, drafts and file export.
  */
 public class IntentModel {
 
-    public String label = "";          // auto-generated summary for history display
+    // ─── Launch modes ────────────────────────────────────────────────────
+
+    public static final String MODE_ACTIVITY = "activity";
+    public static final String MODE_ACTIVITY_RESULT = "activityResult";
+    public static final String MODE_SERVICE = "service";
+    public static final String MODE_FG_SERVICE = "fgService";
+    public static final String MODE_STOP_SERVICE = "stopService";
+    public static final String MODE_BIND_SERVICE = "bindService";
+    public static final String MODE_BROADCAST = "broadcast";
+    public static final String MODE_ORDERED_BROADCAST = "orderedBroadcast";
+    public static final String MODE_RESOLVE = "resolve";
+
+    public static final String[] MODES = {
+            MODE_ACTIVITY, MODE_ACTIVITY_RESULT, MODE_SERVICE, MODE_FG_SERVICE,
+            MODE_STOP_SERVICE, MODE_BIND_SERVICE, MODE_BROADCAST, MODE_ORDERED_BROADCAST, MODE_RESOLVE
+    };
+
+    public static String modeLabel(String mode) {
+        if (mode == null) return "Activity";
+        switch (mode) {
+            case MODE_ACTIVITY_RESULT:    return "Activity for result";
+            case MODE_SERVICE:            return "Start service";
+            case MODE_FG_SERVICE:         return "Foreground service";
+            case MODE_STOP_SERVICE:       return "Stop service";
+            case MODE_BIND_SERVICE:       return "Bind service";
+            case MODE_BROADCAST:          return "Broadcast";
+            case MODE_ORDERED_BROADCAST:  return "Ordered broadcast";
+            case MODE_RESOLVE:            return "Resolve only (dry run)";
+            default:                      return "Activity";
+        }
+    }
+
+    public static String modeShortLabel(String mode) {
+        if (mode == null) return "Activity";
+        switch (mode) {
+            case MODE_ACTIVITY_RESULT:    return "For result";
+            case MODE_SERVICE:            return "Service";
+            case MODE_FG_SERVICE:         return "FG service";
+            case MODE_STOP_SERVICE:       return "Stop svc";
+            case MODE_BIND_SERVICE:       return "Bind";
+            case MODE_BROADCAST:          return "Broadcast";
+            case MODE_ORDERED_BROADCAST:  return "Ordered";
+            case MODE_RESOLVE:            return "Resolve";
+            default:                      return "Activity";
+        }
+    }
+
+    public static boolean isActivityMode(String mode) {
+        return MODE_ACTIVITY.equals(mode) || MODE_ACTIVITY_RESULT.equals(mode);
+    }
+
+    public static boolean isServiceMode(String mode) {
+        return MODE_SERVICE.equals(mode) || MODE_FG_SERVICE.equals(mode)
+                || MODE_STOP_SERVICE.equals(mode) || MODE_BIND_SERVICE.equals(mode);
+    }
+
+    public static boolean isBroadcastMode(String mode) {
+        return MODE_BROADCAST.equals(mode) || MODE_ORDERED_BROADCAST.equals(mode);
+    }
+
+    /** Maps legacy chip ids (chipActivity…) to the new mode keys. */
+    public static String normalizeMode(String raw) {
+        if (raw == null || raw.isEmpty()) return MODE_ACTIVITY;
+        switch (raw) {
+            case "chipActivity":       return MODE_ACTIVITY;
+            case "chipService":        return MODE_SERVICE;
+            case "chipFgService":      return MODE_FG_SERVICE;
+            case "chipBroadcast":      return MODE_BROADCAST;
+            case "chipActivityResult": return MODE_ACTIVITY_RESULT;
+            default:
+                for (String m : MODES) if (m.equals(raw)) return raw;
+                return MODE_ACTIVITY;
+        }
+    }
+
+    // ─── Fields ──────────────────────────────────────────────────────────
+
+    public String label = "";          // auto-generated summary for lists
+    public String name = "";           // user-given name (favorites / presets)
+    public String description = "";    // optional note (presets)
     public long timestamp;             // millis
 
     // Component
@@ -21,7 +100,7 @@ public class IntentModel {
     public String packageName = "";
     public String componentName = "";
 
-    // Action
+    // Action(s)
     public boolean useAction;
     public String action = "";
     public List<String> actions = new ArrayList<>();
@@ -35,28 +114,26 @@ public class IntentModel {
     public boolean useCategory;
     public List<String> categories = new ArrayList<>();
 
-    // Extras
+    // Extras (nested bundles are ExtraEntry with type Bundle and children)
     public boolean useExtras;
     public List<ExtraEntry> extras = new ArrayList<>();
 
-    // Bundles
-    public boolean useBundle;
-    public List<BundleEntry> bundles = new ArrayList<>();
-
     // Flags
     public boolean useFlags;
-    public List<String> flagNames = new ArrayList<>();   // chip tag names
+    public List<String> flagNames = new ArrayList<>();
     public String customFlags = "";
 
-    // Launch type chip id name (chipActivity, chipService, etc.)
-    public String launchType = "chipActivity";
+    // Launch mode
+    public String launchType = MODE_ACTIVITY;
 
     // Chooser
     public boolean useChooser;
     public String chooserTitle = "";
 
-    // Permission (for broadcasts)
-    public String permission = "";
+    // Advanced
+    public boolean useAdvanced;
+    public String permission = "";     // receiver permission for broadcasts
+    public String identifier = "";     // Intent.setIdentifier (API 29+)
 
     // Clip Data
     public boolean useClipData;
@@ -67,7 +144,7 @@ public class IntentModel {
     // ─── Nested types ────────────────────────────────────────────────────
 
     public static class ClipDataItem {
-        public String type = "Text"; // Text, Html, Uri
+        public String type = "Text"; // Text, Html, Uri, Intent
         public String value = "";
 
         public ClipDataItem() {}
@@ -83,7 +160,7 @@ public class IntentModel {
             return o;
         }
 
-        public static ClipDataItem fromJson(JSONObject o) throws JSONException {
+        public static ClipDataItem fromJson(JSONObject o) {
             ClipDataItem item = new ClipDataItem();
             item.type = o.optString("type", "Text");
             item.value = o.optString("value", "");
@@ -94,7 +171,8 @@ public class IntentModel {
     public static class ExtraEntry {
         public String key = "";
         public String value = "";
-        public String type = "String";
+        public String type = ExtraTypes.STRING;
+        public List<ExtraEntry> children = new ArrayList<>();   // only for Bundle
 
         public ExtraEntry() {}
         public ExtraEntry(String key, String value, String type) {
@@ -103,11 +181,28 @@ public class IntentModel {
             this.type = type;
         }
 
+        public static ExtraEntry bundle(String key, List<ExtraEntry> children) {
+            ExtraEntry e = new ExtraEntry(key, "", ExtraTypes.BUNDLE);
+            e.children.addAll(children);
+            return e;
+        }
+
+        public ExtraEntry copy() {
+            ExtraEntry e = new ExtraEntry(key, value, type);
+            for (ExtraEntry c : children) e.children.add(c.copy());
+            return e;
+        }
+
         public JSONObject toJson() throws JSONException {
             JSONObject o = new JSONObject();
             o.put("key", key);
             o.put("value", value);
             o.put("type", type);
+            if (!children.isEmpty()) {
+                JSONArray arr = new JSONArray();
+                for (ExtraEntry c : children) arr.put(c.toJson());
+                o.put("children", arr);
+            }
             return o;
         }
 
@@ -115,36 +210,12 @@ public class IntentModel {
             ExtraEntry e = new ExtraEntry();
             e.key = o.optString("key", "");
             e.value = o.optString("value", "");
-            e.type = o.optString("type", "String");
-            return e;
-        }
-    }
-
-    public static class BundleEntry {
-        public String key = "";
-        public List<ExtraEntry> extras = new ArrayList<>();
-
-        public BundleEntry() {}
-
-        public JSONObject toJson() throws JSONException {
-            JSONObject o = new JSONObject();
-            o.put("key", key);
-            JSONArray arr = new JSONArray();
-            for (ExtraEntry e : extras) arr.put(e.toJson());
-            o.put("extras", arr);
-            return o;
-        }
-
-        public static BundleEntry fromJson(JSONObject o) throws JSONException {
-            BundleEntry b = new BundleEntry();
-            b.key = o.optString("key", "");
-            JSONArray arr = o.optJSONArray("extras");
+            e.type = o.optString("type", ExtraTypes.STRING);
+            JSONArray arr = o.optJSONArray("children");
             if (arr != null) {
-                for (int i = 0; i < arr.length(); i++) {
-                    b.extras.add(ExtraEntry.fromJson(arr.getJSONObject(i)));
-                }
+                for (int i = 0; i < arr.length(); i++) e.children.add(fromJson(arr.getJSONObject(i)));
             }
-            return b;
+            return e;
         }
     }
 
@@ -152,7 +223,10 @@ public class IntentModel {
 
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
+        o.put("version", 2);
         o.put("label", label);
+        o.put("name", name);
+        o.put("description", description);
         o.put("timestamp", timestamp);
 
         o.put("useComponent", useComponent);
@@ -160,47 +234,37 @@ public class IntentModel {
         o.put("componentName", componentName);
 
         o.put("useAction", useAction);
-        o.put("action", action);
-        JSONArray actArr = new JSONArray();
-        for (String a : actions) actArr.put(a);
-        o.put("actions", actArr);
+        o.put("action", actions.isEmpty() ? action : actions.get(0));
+        o.put("actions", toArray(actions));
 
         o.put("useData", useData);
         o.put("dataUri", dataUri);
         o.put("mimeType", mimeType);
 
         o.put("useCategory", useCategory);
-        JSONArray catArr = new JSONArray();
-        for (String c : categories) catArr.put(c);
-        o.put("categories", catArr);
+        o.put("categories", toArray(categories));
 
         o.put("useExtras", useExtras);
         JSONArray extArr = new JSONArray();
         for (ExtraEntry e : extras) extArr.put(e.toJson());
         o.put("extras", extArr);
 
-        o.put("useBundle", useBundle);
-        JSONArray bunArr = new JSONArray();
-        for (BundleEntry b : bundles) bunArr.put(b.toJson());
-        o.put("bundles", bunArr);
-
         o.put("useFlags", useFlags);
-        JSONArray flagArr = new JSONArray();
-        for (String f : flagNames) flagArr.put(f);
-        o.put("flagNames", flagArr);
+        o.put("flagNames", toArray(flagNames));
         o.put("customFlags", customFlags);
 
         o.put("launchType", launchType);
 
         o.put("useChooser", useChooser);
         o.put("chooserTitle", chooserTitle);
+
+        o.put("useAdvanced", useAdvanced);
         o.put("permission", permission);
+        o.put("identifier", identifier);
 
         o.put("useClipData", useClipData);
         o.put("clipDataLabel", clipDataLabel);
-        JSONArray cdMimes = new JSONArray();
-        for (String m : clipDataMimeTypes) cdMimes.put(m);
-        o.put("clipDataMimeTypes", cdMimes);
+        o.put("clipDataMimeTypes", toArray(clipDataMimeTypes));
         JSONArray cdItems = new JSONArray();
         for (ClipDataItem item : clipDataItems) cdItems.put(item.toJson());
         o.put("clipDataItems", cdItems);
@@ -208,9 +272,23 @@ public class IntentModel {
         return o;
     }
 
+    public String toJsonString() {
+        try {
+            return toJson().toString(2);
+        } catch (JSONException e) {
+            return "{}";
+        }
+    }
+
+    public static IntentModel fromJsonString(String json) throws JSONException {
+        return fromJson(new JSONObject(json));
+    }
+
     public static IntentModel fromJson(JSONObject o) throws JSONException {
         IntentModel m = new IntentModel();
         m.label = o.optString("label", "");
+        m.name = o.optString("name", "");
+        m.description = o.optString("description", "");
         m.timestamp = o.optLong("timestamp", 0);
 
         m.useComponent = o.optBoolean("useComponent", false);
@@ -219,91 +297,120 @@ public class IntentModel {
 
         m.useAction = o.optBoolean("useAction", false);
         m.action = o.optString("action", "");
-        JSONArray actArr = o.optJSONArray("actions");
-        if (actArr != null) {
-            for (int i = 0; i < actArr.length(); i++) {
-                m.actions.add(actArr.getString(i));
-            }
-        }
-        if (m.actions.isEmpty() && !m.action.isEmpty()) {
-            m.actions.add(m.action);
-        }
+        m.actions.addAll(fromArray(o.optJSONArray("actions")));
+        if (m.actions.isEmpty() && !m.action.isEmpty()) m.actions.add(m.action);
 
         m.useData = o.optBoolean("useData", false);
         m.dataUri = o.optString("dataUri", "");
         m.mimeType = o.optString("mimeType", "");
 
         m.useCategory = o.optBoolean("useCategory", false);
-        JSONArray catArr = o.optJSONArray("categories");
-        if (catArr != null) {
-            for (int i = 0; i < catArr.length(); i++) m.categories.add(catArr.getString(i));
-        }
+        m.categories.addAll(fromArray(o.optJSONArray("categories")));
 
         m.useExtras = o.optBoolean("useExtras", false);
         JSONArray extArr = o.optJSONArray("extras");
         if (extArr != null) {
-            for (int i = 0; i < extArr.length(); i++) {
-                m.extras.add(ExtraEntry.fromJson(extArr.getJSONObject(i)));
-            }
+            for (int i = 0; i < extArr.length(); i++) m.extras.add(ExtraEntry.fromJson(extArr.getJSONObject(i)));
         }
 
-        m.useBundle = o.optBoolean("useBundle", false);
+        // Legacy v1 "bundles" section: migrate into nested Bundle extras.
         JSONArray bunArr = o.optJSONArray("bundles");
-        if (bunArr != null) {
+        if (bunArr != null && bunArr.length() > 0 && o.optBoolean("useBundle", false)) {
+            m.useExtras = true;
             for (int i = 0; i < bunArr.length(); i++) {
-                m.bundles.add(BundleEntry.fromJson(bunArr.getJSONObject(i)));
+                JSONObject b = bunArr.getJSONObject(i);
+                String key = b.optString("key", "");
+                List<ExtraEntry> children = new ArrayList<>();
+                JSONArray arr = b.optJSONArray("extras");
+                if (arr != null) {
+                    for (int j = 0; j < arr.length(); j++) children.add(ExtraEntry.fromJson(arr.getJSONObject(j)));
+                }
+                if (key.isEmpty()) m.extras.addAll(children);
+                else m.extras.add(ExtraEntry.bundle(key, children));
             }
         }
 
         m.useFlags = o.optBoolean("useFlags", false);
-        JSONArray flagArr = o.optJSONArray("flagNames");
-        if (flagArr != null) {
-            for (int i = 0; i < flagArr.length(); i++) m.flagNames.add(flagArr.getString(i));
-        }
+        m.flagNames.addAll(fromArray(o.optJSONArray("flagNames")));
         m.customFlags = o.optString("customFlags", "");
 
-        m.launchType = o.optString("launchType", "chipActivity");
+        m.launchType = normalizeMode(o.optString("launchType", MODE_ACTIVITY));
 
         m.useChooser = o.optBoolean("useChooser", false);
         m.chooserTitle = o.optString("chooserTitle", "");
+
+        m.useAdvanced = o.optBoolean("useAdvanced", false);
         m.permission = o.optString("permission", "");
+        m.identifier = o.optString("identifier", "");
+        if (!m.permission.isEmpty() || !m.identifier.isEmpty()) m.useAdvanced = true;
 
         m.useClipData = o.optBoolean("useClipData", false);
         m.clipDataLabel = o.optString("clipDataLabel", "");
-        JSONArray cdMimes = o.optJSONArray("clipDataMimeTypes");
-        if (cdMimes != null) {
-            for (int i = 0; i < cdMimes.length(); i++) {
-                m.clipDataMimeTypes.add(cdMimes.getString(i));
-            }
-        }
+        m.clipDataMimeTypes.addAll(fromArray(o.optJSONArray("clipDataMimeTypes")));
         JSONArray cdItems = o.optJSONArray("clipDataItems");
         if (cdItems != null) {
-            for (int i = 0; i < cdItems.length(); i++) {
-                m.clipDataItems.add(ClipDataItem.fromJson(cdItems.getJSONObject(i)));
-            }
+            for (int i = 0; i < cdItems.length(); i++) m.clipDataItems.add(ClipDataItem.fromJson(cdItems.getJSONObject(i)));
         }
 
         return m;
     }
 
-    /** Generate a human-readable label for the history list */
+    private static JSONArray toArray(List<String> list) {
+        JSONArray arr = new JSONArray();
+        for (String s : list) arr.put(s);
+        return arr;
+    }
+
+    private static List<String> fromArray(JSONArray arr) throws JSONException {
+        List<String> list = new ArrayList<>();
+        if (arr != null) {
+            for (int i = 0; i < arr.length(); i++) list.add(arr.getString(i));
+        }
+        return list;
+    }
+
+    public IntentModel copy() {
+        try {
+            IntentModel c = fromJson(toJson());
+            return c;
+        } catch (JSONException e) {
+            return new IntentModel();
+        }
+    }
+
+    /** First non-empty action, or empty string. */
+    public String primaryAction() {
+        for (String a : actions) if (a != null && !a.trim().isEmpty()) return a.trim();
+        return action == null ? "" : action.trim();
+    }
+
+    /** Number of extras including nested ones. */
+    public int extraCount() {
+        return countExtras(extras);
+    }
+
+    private static int countExtras(List<ExtraEntry> list) {
+        int n = 0;
+        for (ExtraEntry e : list) {
+            n++;
+            if (!e.children.isEmpty()) n += countExtras(e.children);
+        }
+        return n;
+    }
+
+    /** Generate a human-readable label for lists. */
     public String generateLabel() {
         StringBuilder sb = new StringBuilder();
-        String primaryAction = "";
-        if (!actions.isEmpty()) {
-            primaryAction = actions.get(0);
-        } else if (!action.isEmpty()) {
-            primaryAction = action;
-        }
+        String primaryAction = primaryAction();
         if (!primaryAction.isEmpty()) {
             String shortAction = primaryAction;
             if (shortAction.startsWith("android.intent.action.")) {
                 shortAction = shortAction.substring("android.intent.action.".length());
             }
             sb.append(shortAction);
-            if (actions.size() > 1) {
-                sb.append(" (+").append(actions.size() - 1).append(")");
-            }
+            int extra = 0;
+            for (String a : actions) if (a != null && !a.trim().isEmpty()) extra++;
+            if (extra > 1) sb.append(" (+").append(extra - 1).append(")");
         }
         if (!packageName.isEmpty()) {
             if (sb.length() > 0) sb.append(" → ");
@@ -324,4 +431,3 @@ public class IntentModel {
         return sb.toString();
     }
 }
-

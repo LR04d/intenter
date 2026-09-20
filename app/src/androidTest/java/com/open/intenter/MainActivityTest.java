@@ -1,11 +1,12 @@
 package com.open.intenter;
 
-import android.content.Intent;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.espresso.action.ViewActions;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
 
@@ -15,19 +16,18 @@ import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Instrumented tests for MainActivity covering all UI and intent building scenarios.
+ * Instrumented tests for the Build tab hosted by MainActivity.
  */
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
@@ -60,21 +60,23 @@ public class MainActivityTest {
         });
     }
 
-    // ─── TC-01: App launches ─────────────────────────────────────────────
+    private void waitForIdle() {
+        try { Thread.sleep(400); } catch (InterruptedException ignored) {}
+    }
+
     @Test
     public void tc01_appLaunchesSuccessfully() {
         onView(withId(R.id.toolbar)).check(matches(isDisplayed()));
         onView(withId(R.id.launchButton)).check(matches(isDisplayed()));
+        onView(withId(R.id.bottomNav)).check(matches(isDisplayed()));
     }
 
-    // ─── TC-02: Component on by default ──────────────────────────────────
     @Test
     public void tc02_componentSectionVisibleByDefault() {
         onView(withId(R.id.componentLayout)).check(matches(isDisplayed()));
         onView(withId(R.id.useComponent)).check(matches(isChecked()));
     }
 
-    // ─── TC-03: Toggle component switch ──────────────────────────────────
     @Test
     public void tc03_componentSwitchToggle() {
         onView(withId(R.id.useComponent)).perform(click());
@@ -83,109 +85,119 @@ public class MainActivityTest {
         onView(withId(R.id.componentLayout)).check(matches(isDisplayed()));
     }
 
-    // ─── TC-04: Other sections hidden by default ─────────────────────────
     @Test
     public void tc04_otherSectionsHiddenByDefault() {
-        onView(withId(R.id.actionsLayout)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.dataLayout)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.categoriesLayout)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.extrasLayout)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.bundlesLayout)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.flagsLayout)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.chooserLayout)).check(matches(not(isDisplayed())));
+        assertViewVisibility(R.id.actionsLayout, View.GONE);
+        assertViewVisibility(R.id.dataLayout, View.GONE);
+        assertViewVisibility(R.id.categoriesLayout, View.GONE);
+        assertViewVisibility(R.id.extrasLayout, View.GONE);
+        assertViewVisibility(R.id.clipDataLayout, View.GONE);
+        assertViewVisibility(R.id.flagsLayout, View.GONE);
+        assertViewVisibility(R.id.chooserLayout, View.GONE);
+        assertViewVisibility(R.id.advancedLayout, View.GONE);
     }
 
-    // ─── TC-05: Action toggle ────────────────────────────────────────────
     @Test
-    public void tc05_actionSwitchToggle() {
-        onView(withId(R.id.useActions)).perform(click());
-        onView(withId(R.id.actionsLayout)).check(matches(isDisplayed()));
-        onView(withId(R.id.actionInput)).check(matches(isDisplayed()));
+    public void tc05_actionSwitchAddsFirstRow() {
+        setSwitchChecked(R.id.useActions, true);
+        assertViewVisibility(R.id.actionsLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity -> {
+            LinearLayout c = activity.findViewById(R.id.actionsContainer);
+            assertEquals(1, c.getChildCount());
+        });
     }
 
-    // ─── TC-06: Data toggle ──────────────────────────────────────────────
     @Test
     public void tc06_dataSwitchToggle() {
-        onView(withId(R.id.useData)).perform(click());
-        onView(withId(R.id.dataLayout)).check(matches(isDisplayed()));
-        onView(withId(R.id.dataUriInput)).check(matches(isDisplayed()));
-        onView(withId(R.id.dataTypeInput)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useData, true);
+        assertViewVisibility(R.id.dataLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity -> {
+            assertNotNull(activity.findViewById(R.id.dataUriInput));
+            assertNotNull(activity.findViewById(R.id.dataTypeInput));
+        });
     }
 
-    // ─── TC-07: Category toggle ──────────────────────────────────────────
     @Test
     public void tc07_categorySwitchToggle() {
-        onView(withId(R.id.useCategory)).perform(click());
-        onView(withId(R.id.categoriesLayout)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useCategory, true);
+        assertViewVisibility(R.id.categoriesLayout, View.VISIBLE);
     }
 
-    // ─── TC-08: Flags toggle ─────────────────────────────────────────────
     @Test
-    public void tc08_flagsSwitchToggle() {
+    public void tc08_flagsSwitchShowsGroupedChips() {
         setSwitchChecked(R.id.useFlags, true);
         assertViewVisibility(R.id.flagsLayout, View.VISIBLE);
-        activityRule.getScenario().onActivity(activity ->
-                assertNotNull(activity.findViewById(R.id.flagsChipGroup)));
+        activityRule.getScenario().onActivity(activity -> {
+            LinearLayout groups = activity.findViewById(R.id.flagsGroupsContainer);
+            assertTrue("Flag groups should be populated", groups.getChildCount() >= 2 * FlagRegistry.groups().size());
+        });
     }
 
-    // ─── TC-09: Add category ─────────────────────────────────────────────
     @Test
     public void tc09_addCategoryItem() {
-        onView(withId(R.id.useCategory)).perform(click());
-        onView(withId(R.id.addCategoryButton)).perform(click());
-        onView(withId(R.id.categoriesContainer)).check(matches(isDisplayed()));
+        setSwitchChecked(R.id.useCategory, true);
+        clickOnUiThread(R.id.addCategoryButton);
+        activityRule.getScenario().onActivity(activity -> {
+            LinearLayout c = activity.findViewById(R.id.categoriesContainer);
+            assertEquals(2, c.getChildCount());
+        });
     }
 
-    // ─── TC-10: Add extra ────────────────────────────────────────────────
     @Test
-    public void tc10_addExtraItem() {
+    public void tc10_addExtraItemAndNestedBundle() {
         setSwitchChecked(R.id.useExtras, true);
         clickOnUiThread(R.id.addExtraButton);
-        assertViewVisibility(R.id.extrasContainer, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity -> {
+            LinearLayout c = activity.findViewById(R.id.extrasContainer);
+            assertEquals(2, c.getChildCount());
+            assertNotNull(c.getChildAt(0).findViewById(R.id.extraChildrenContainer));
+        });
     }
 
-    // ─── TC-11: Add bundle ───────────────────────────────────────────────
     @Test
-    public void tc11_addBundleItem() {
-        setSwitchChecked(R.id.useBundle, true);
-        clickOnUiThread(R.id.addBundleButton);
-        assertViewVisibility(R.id.bundlesContainer, View.VISIBLE);
+    public void tc11_clipDataSwitchAddsRow() {
+        setSwitchChecked(R.id.useClipData, true);
+        assertViewVisibility(R.id.clipDataLayout, View.VISIBLE);
+        activityRule.getScenario().onActivity(activity -> {
+            LinearLayout c = activity.findViewById(R.id.clipDataItemsContainer);
+            assertEquals(1, c.getChildCount());
+        });
     }
 
-    // ─── TC-12: Launch type chips visible ────────────────────────────────
     @Test
-    public void tc12_launchTypeChips() {
-        onView(withId(R.id.chipActivity)).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.chipService)).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.chipFgService)).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.chipBroadcast)).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.chipActivityResult)).perform(scrollTo()).check(matches(isDisplayed()));
+    public void tc12_modeButtonAndSheetPresent() {
+        onView(withId(R.id.modeButton)).check(matches(isDisplayed()));
+        onView(withId(R.id.previewLine)).check(matches(isDisplayed()));
+        activityRule.getScenario().onActivity(activity ->
+                assertNotNull(activity.findViewById(R.id.intentPreviewText)));
     }
 
-    // ─── TC-13: Preview visible ──────────────────────────────────────────
     @Test
-    public void tc13_intentPreviewVisible() {
-        onView(withId(R.id.intentPreviewText)).perform(scrollTo()).check(matches(isDisplayed()));
-        onView(withId(R.id.copyIntentButton)).perform(scrollTo()).check(matches(isDisplayed()));
+    public void tc13_previewControlsExist() {
+        activityRule.getScenario().onActivity(activity -> {
+            assertNotNull(activity.findViewById(R.id.copyIntentButton));
+            assertNotNull(activity.findViewById(R.id.shareIntentButton));
+            assertNotNull(activity.findViewById(R.id.formatChips));
+        });
     }
 
-    // ─── TC-14: Package input updates preview ────────────────────────────
     @Test
     public void tc14_typingPackageUpdatesPreview() {
         onView(withId(R.id.packageInput)).perform(typeText("com.test.app"), ViewActions.closeSoftKeyboard());
-        onView(withId(R.id.intentPreviewText)).perform(scrollTo())
-                .check(matches(withText(containsString("com.test.app"))));
+        waitForIdle();
+        activityRule.getScenario().onActivity(activity -> {
+            TextView preview = activity.findViewById(R.id.previewLine);
+            assertTrue(preview.getText().toString(), preview.getText().toString().contains("com.test.app"));
+        });
     }
 
-    // ─── TC-15: Launch empty intent no crash ─────────────────────────────
     @Test
-    public void tc15_launchWithEmptyComponentNoCrash() {
+    public void tc15_launchWithEmptyIntentNoCrash() {
         setSwitchChecked(R.id.useComponent, false);
         clickOnUiThread(R.id.launchButton);
         onView(withId(R.id.toolbar)).check(matches(isDisplayed()));
     }
 
-    // ─── TC-16: Extras toggle ────────────────────────────────────────────
     @Test
     public void tc16_extrasSwitchToggle() {
         setSwitchChecked(R.id.useExtras, true);
@@ -194,41 +206,43 @@ public class MainActivityTest {
                 assertNotNull(activity.findViewById(R.id.addExtraButton)));
     }
 
-    // ─── TC-17: Bundle toggle ────────────────────────────────────────────
     @Test
-    public void tc17_bundleSwitchToggle() {
-        setSwitchChecked(R.id.useBundle, true);
-        assertViewVisibility(R.id.bundlesLayout, View.VISIBLE);
+    public void tc17_advancedSwitchToggle() {
+        setSwitchChecked(R.id.useAdvanced, true);
+        assertViewVisibility(R.id.advancedLayout, View.VISIBLE);
         activityRule.getScenario().onActivity(activity ->
-                assertNotNull(activity.findViewById(R.id.addBundleButton)));
+                assertNotNull(activity.findViewById(R.id.receiverPermissionInput)));
     }
 
-    // ─── TC-18: Flags chip count ─────────────────────────────────────────
     @Test
-    public void tc18_flagsChipGroupHasChildren() {
-        setSwitchChecked(R.id.useFlags, true);
-        activityRule.getScenario().onActivity(activity -> {
-            com.google.android.material.chip.ChipGroup cg = activity.findViewById(R.id.flagsChipGroup);
-            assertTrue("Flags chip group should have children", cg.getChildCount() > 0);
-        });
+    public void tc18_bottomNavSwitchesTabs() {
+        onView(withId(R.id.nav_inbox)).perform(click());
+        onView(withId(R.id.eventsRecyclerView)).check(matches(isDisplayed()));
+        onView(withId(R.id.nav_saved)).perform(click());
+        onView(withId(R.id.savedTabs)).check(matches(isDisplayed()));
+        onView(withId(R.id.nav_provider)).perform(click());
+        onView(withId(R.id.providerUriInput)).check(matches(isDisplayed()));
+        onView(withId(R.id.nav_build)).perform(click());
+        onView(withId(R.id.launchButton)).check(matches(isDisplayed()));
     }
 
-    // ─── TC-19: Preview updates with component ──────────────────────────
     @Test
     public void tc19_previewUpdatesWithComponentInput() {
         onView(withId(R.id.packageInput)).perform(typeText("com.foo"), ViewActions.closeSoftKeyboard());
         onView(withId(R.id.componentInput)).perform(typeText(".Bar"), ViewActions.closeSoftKeyboard());
-        onView(withId(R.id.intentPreviewText)).perform(scrollTo())
-                .check(matches(withText(containsString("com.foo"))));
+        waitForIdle();
+        activityRule.getScenario().onActivity(activity -> {
+            TextView preview = activity.findViewById(R.id.previewLine);
+            assertTrue(preview.getText().toString(), preview.getText().toString().contains("com.foo/.Bar")
+                    || preview.getText().toString().contains("com.foo/com.foo.Bar"));
+        });
     }
 
-    // ─── TC-20: Browse button exists ─────────────────────────────────────
     @Test
     public void tc20_browsePackageButtonVisible() {
         onView(withId(R.id.browsePackageButton)).check(matches(isDisplayed()));
     }
 
-    // ─── TC-21: Chooser toggle ───────────────────────────────────────────
     @Test
     public void tc21_chooserSwitchToggle() {
         setSwitchChecked(R.id.useChooser, true);
@@ -237,7 +251,6 @@ public class MainActivityTest {
                 assertNotNull(activity.findViewById(R.id.chooserTitleInput)));
     }
 
-    // ─── TC-22: History manager saves ────────────────────────────────────
     @Test
     public void tc22_historyManagerSaveAndRetrieve() {
         activityRule.getScenario().onActivity(activity -> {
@@ -255,50 +268,56 @@ public class MainActivityTest {
 
             hm.delete(0);
             assertEquals(0, hm.getAll().size());
-
             hm.clearAll();
         });
     }
 
-    // ─── TC-23: History manager cap ──────────────────────────────────────
     @Test
     public void tc23_historyManagerCapsAt100() {
         activityRule.getScenario().onActivity(activity -> {
             HistoryManager hm = HistoryManager.getInstance(activity);
             hm.clearAll();
-
             for (int i = 0; i < 110; i++) {
                 IntentModel m = new IntentModel();
                 m.label = "entry_" + i;
                 hm.save(m);
             }
-
             assertTrue(hm.getAll().size() <= 100);
             hm.clearAll();
         });
     }
 
-    // ─── TC-24: IntentModel round-trip in activity context ───────────────
     @Test
-    public void tc24_intentModelJsonRoundTrip() {
+    public void tc24_loadModelIntoBuilder() {
         activityRule.getScenario().onActivity(activity -> {
-            try {
-                IntentModel m = new IntentModel();
-                m.useComponent = true;
-                m.packageName = "com.example";
-                m.componentName = ".Act";
-                m.useAction = true;
-                m.action = "android.intent.action.VIEW";
+            IntentModel m = new IntentModel();
+            m.useComponent = true;
+            m.packageName = "com.example";
+            m.componentName = ".Act";
+            m.useAction = true;
+            m.actions.add("android.intent.action.VIEW");
+            m.useExtras = true;
+            m.extras.add(new IntentModel.ExtraEntry("k", "v", ExtraTypes.STRING));
+            m.launchType = IntentModel.MODE_BROADCAST;
+            activity.openBuildWithModel(m);
+            IntentModel back = activity.buildFragment().buildModel();
+            assertEquals("com.example", back.packageName);
+            assertEquals(".Act", back.componentName);
+            assertEquals("android.intent.action.VIEW", back.primaryAction());
+            assertEquals(1, back.extras.size());
+            assertEquals(IntentModel.MODE_BROADCAST, back.launchType);
+        });
+    }
 
-                org.json.JSONObject json = m.toJson();
-                IntentModel restored = IntentModel.fromJson(json);
-
-                assertEquals("com.example", restored.packageName);
-                assertEquals(".Act", restored.componentName);
-                assertEquals("android.intent.action.VIEW", restored.action);
-            } catch (Exception e) {
-                fail("JSON round-trip failed: " + e.getMessage());
-            }
+    @Test
+    public void tc25_eventStoreRecordsAndClears() {
+        activityRule.getScenario().onActivity(activity -> {
+            EventStore store = EventStore.get(activity);
+            store.clear();
+            store.add(EventStore.Kind.LAUNCH, "t", "s", "d");
+            assertEquals(1, store.size());
+            store.clear();
+            assertEquals(0, store.size());
         });
     }
 }

@@ -3,58 +3,197 @@
         <item name="colorPrimary">@color/app_primary</item>
         <item name="colorPrimaryVariant">@color/app_primary_dark</item>
         <item name="colorOnPrimary">@color/app_on_primary</item>
+        <item name="colorPrimaryContainer">@color/app_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/app_on_primary_container</item>
+        <item name="colorPrimaryInverse">@color/app_inverse_primary</item>
         <item name="colorSecondary">@color/app_secondary</item>
+        <item name="colorOnSecondary">@color/app_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/app_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/app_on_secondary_container</item>
         <item name="colorTertiary">@color/app_tertiary</item>
+        <item name="colorOnTertiary">@color/app_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/app_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/app_on_tertiary_container</item>
+        <item name="colorError">@color/app_error</item>
+        <item name="colorOnError">@color/app_on_error</item>
+        <item name="colorErrorContainer">@color/app_error_container</item>
+        <item name="colorOnErrorContainer">@color/app_on_error_container</item>
         <item name="colorSurface">@color/app_surface</item>
         <item name="colorSurfaceVariant">@color/app_surface_alt</item>
+        <item name="colorSurfaceContainerLowest">@color/app_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/app_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/app_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/app_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/app_surface_container_highest</item>
+        <item name="colorSurfaceInverse">@color/app_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/app_inverse_on_surface</item>
         <item name="colorOnSurface">@color/app_on_surface</item>
         <item name="colorOnSurfaceVariant">@color/app_on_surface_variant</item>
         <item name="colorOutline">@color/app_outline</item>
         <item name="colorOutlineVariant">@color/app_outline_variant</item>
-        <item name="colorError">@color/app_error</item>
         <item name="colorControlNormal">@color/app_on_surface_variant</item>
         <item name="android:colorBackground">@color/app_page_bg</item>
-        <item name="android:fontFamily">sans</item>
         <item name="android:navigationBarColor">@color/app_surface</item>
         <item name="android:statusBarColor">@color/app_surface</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Intenter.BottomSheet</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Intenter.Dialog</item>
     </style>
 
     <style name="Theme.Intenter" parent="Base.Theme.Intenter" />
 
-    <style name="AppTextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+    <style name="ThemeOverlay.Intenter.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Intenter.BottomSheet</item>
+    </style>
+
+    <style name="Widget.Intenter.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/app_surface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Intenter.Sheet</item>
+    </style>
+
+    <style name="ShapeAppearance.Intenter.Sheet" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">24dp</item>
+        <item name="cornerSizeTopRight">24dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="ThemeOverlay.Intenter.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/app_surface</item>
+    </style>
+
+    <style name="AppTextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense">
         <item name="boxCornerRadiusTopStart">12dp</item>
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
-        <item name="boxStrokeWidth">1.2dp</item>
+        <item name="boxStrokeWidth">1dp</item>
         <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxStrokeColor">@color/app_outline</item>
     </style>
 
     <style name="AppEditText" parent="">
-        <item name="android:paddingTop">16dp</item>
-        <item name="android:paddingBottom">16dp</item>
-        <item name="android:minHeight">56dp</item>
-        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
+        <item name="android:textColor">@color/app_on_surface</item>
     </style>
 
-    <style name="AppTextInputLayoutDropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+    <style name="AppCodeEditText" parent="AppEditText">
+        <item name="android:fontFamily">monospace</item>
+    </style>
+
+    <style name="AppTextInputLayoutDropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu">
         <item name="boxCornerRadiusTopStart">12dp</item>
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
-        <item name="boxStrokeWidth">1.2dp</item>
+        <item name="boxStrokeWidth">1dp</item>
         <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxStrokeColor">@color/app_outline</item>
     </style>
 
     <style name="SectionCard" parent="Widget.Material3.CardView.Filled">
-        <item name="cardCornerRadius">16dp</item>
+        <item name="cardCornerRadius">18dp</item>
         <item name="cardElevation">0dp</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">@color/app_outline_variant</item>
         <item name="cardBackgroundColor">@color/app_surface</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+
+    <style name="SectionHeader" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="SectionTitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">?attr/textAppearanceTitleMedium</item>
+        <item name="android:textColor">@color/app_on_surface</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SectionSubtitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">1dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodySmall</item>
+        <item name="android:textColor">@color/app_on_surface_variant</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="SectionBody" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+    <style name="AddRowButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="icon">@drawable/ic_add</item>
+        <item name="iconSize">18dp</item>
+    </style>
+
+    <style name="RemoveRowButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="icon">@drawable/ic_delete</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconTint">@color/app_on_surface_variant</item>
+    </style>
+
+    <style name="CodePanel" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_code_panel</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodySmall</item>
+        <item name="android:textColor">@color/app_code_text</item>
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <style name="Badge" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelSmall</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:background">@drawable/chip_label_bg</item>
+        <item name="android:textColor">@color/app_chip_text</item>
+    </style>
+
+    <style name="RowChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipMinHeight">32dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelMedium</item>
+    </style>
+
+    <style name="SuggestionChip" parent="Widget.Material3.Chip.Suggestion">
+        <item name="chipMinHeight">30dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelMedium</item>
     </style>
 </resources>
